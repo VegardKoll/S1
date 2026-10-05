@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hvor ligger du an? – Matematikk S1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F5F8; --surface:#FFFFFF; --ink:#16233A; --muted:#56667C; --line:#D3DCE6;
+  --grid:rgba(22,35,58,.05); --done:#0F7F6D; --done-soft:#D7EEE9; --todo:#E3E9F0; --focus:#2F5BD3;
+  --d1:#2F5BD3; --d2:#9B5A00;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --paper:#101824; --surface:#18222F; --ink:#E7EDF4; --muted:#9AA9BB; --line:#2B394A;
+  --grid:rgba(231,237,244,.04); --done:#3CC3AC; --done-soft:#173A36; --todo:#243244; --focus:#7EA2FF;
+  --d1:#8CA8FF; --d2:#E2A653; }}
+:root[data-theme="dark"]{
+  --paper:#101824; --surface:#18222F; --ink:#E7EDF4; --muted:#9AA9BB; --line:#2B394A;
+  --grid:rgba(231,237,244,.04); --done:#3CC3AC; --done-soft:#173A36; --todo:#243244; --focus:#7EA2FF;
+  --d1:#8CA8FF; --d2:#E2A653; }
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;color:var(--ink);background:var(--paper);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:24px 24px;
+  font:400 1.0625rem/1.55 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif;line-height:1.15;margin:0}
+.wrap{max-width:860px;margin:0 auto;padding:2rem 1.25rem 4rem}
+header{display:flex;flex-wrap:wrap;gap:1rem 2rem;align-items:flex-end;justify-content:space-between;margin-bottom:1.75rem}
+.course{color:var(--muted);font-size:.95rem;margin:0 0 .35rem}
+h1{font-size:clamp(2rem,6vw,3rem);font-weight:800;letter-spacing:-.02em}
+.name label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:.25rem}
+.name input{font:inherit;padding:.5rem .7rem;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:14rem;max-width:100%}
+
+/* Eksamenskartet */
+.map{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:1.25rem 1.25rem 1rem}
+.score{display:flex;flex-wrap:wrap;align-items:baseline;gap:.25rem 1rem;margin-bottom:1rem}
+.score .big{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:clamp(2.6rem,9vw,4rem);line-height:1;color:var(--done);font-variant-numeric:tabular-nums}
+.score p{margin:0;max-width:34rem}
+.bar{display:flex;gap:3px;height:76px;border-radius:8px;overflow:hidden}
+.seg{position:relative;flex-grow:var(--w);flex-basis:0;min-width:0;background:var(--todo);border:0;padding:0;cursor:pointer;color:inherit;font:inherit}
+.seg .fill{position:absolute;left:0;right:0;bottom:0;height:calc(var(--p)*100%);background:var(--done);transition:height .45s ease}
+.seg span{position:absolute;left:6px;top:6px;right:4px;font-size:.72rem;font-weight:700;line-height:1.15;text-align:left;overflow:hidden;color:var(--ink);hyphens:auto;-webkit-hyphens:auto;overflow-wrap:anywhere;bottom:4px}
+.seg.full span{color:#fff}
+:root[data-theme="dark"] .seg.full span{color:#0c1a17}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .seg.full span{color:#0c1a17}}
+.seg:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+.mapnote{font-size:.88rem;color:var(--muted);margin:.75rem 0 0}
+
+.tools{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;margin:1.5rem 0 .5rem}
+.toggle{display:flex;align-items:center;gap:.5rem;cursor:pointer}
+.toggle input{width:1.15rem;height:1.15rem;accent-color:var(--done)}
+.tools .spacer{flex:1}
+button.btn{font:inherit;font-size:.95rem;padding:.45rem .9rem;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button.btn:hover{border-color:var(--muted)}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+
+/* Temaer */
+.theme{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;margin-top:1rem;overflow:hidden}
+.theme.complete{border-color:var(--done)}
+.thead{padding:1.1rem 1.25rem .9rem;border-bottom:1.5px solid var(--line)}
+.trow{display:flex;gap:1rem;align-items:flex-start;justify-content:space-between}
+h2{font-size:1.4rem;font-weight:700}
+.count{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;font-size:1.05rem;white-space:nowrap;font-variant-numeric:tabular-nums}
+.meta{display:flex;flex-wrap:wrap;gap:.4rem .5rem;margin-top:.55rem;font-size:.85rem}
+.tag{border:1.5px solid var(--line);border-radius:999px;padding:.05rem .55rem;color:var(--muted)}
+.tag.d1{border-color:var(--d1);color:var(--d1)}
+.tag.d2{border-color:var(--d2);color:var(--d2)}
+.book{font-size:.9rem;color:var(--muted);margin:.5rem 0 0}
+.minibar{height:6px;border-radius:3px;background:var(--todo);margin-top:.8rem;overflow:hidden}
+.minibar i{display:block;height:100%;background:var(--done);width:0;transition:width .45s ease}
+ul.goals{list-style:none;margin:0;padding:.35rem 0}
+.goal label{display:flex;gap:.8rem;align-items:flex-start;padding:.55rem 1.25rem;cursor:pointer}
+.goal label:hover{background:var(--paper)}
+.goal input{appearance:none;flex:none;width:1.45rem;height:1.45rem;margin:.05rem 0 0;border:2px solid var(--muted);border-radius:6px;background:var(--surface);display:grid;place-content:center;cursor:pointer}
+.goal input::after{content:"";display:block;width:7px;height:13px;margin-top:-3px;border:solid #fff;border-width:0 3px 3px 0;transform:rotate(45deg) scale(0);transition:transform .15s ease}
+.goal input:checked{background:var(--done);border-color:var(--done)}
+.goal input:checked::after{transform:rotate(45deg) scale(1)}
+:root[data-theme="dark"] .goal input::after{border-color:#0c1a17}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .goal input::after{border-color:#0c1a17}}
+.goal input:checked + span{color:var(--muted)}
+.hide-done .goal.is-done{display:none}
+.hide-done .theme.complete{display:none}
+details{border-top:1.5px solid var(--line)}
+summary{cursor:pointer;padding:.7rem 1.25rem;font-weight:700;font-size:.95rem;color:var(--muted);list-style-position:inside}
+.tasks{padding:0 1.25rem 1rem;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+td{padding:.4rem .5rem .4rem 0;vertical-align:top;border-top:1px solid var(--line)}
+td.src{white-space:nowrap;color:var(--muted);padding-right:1rem}
+.empty{display:none;text-align:center;padding:2rem 1rem;border:1.5px dashed var(--done);border-radius:14px;margin-top:1rem}
+.hide-done.all-done .empty{display:block}
+footer{margin-top:2.5rem;font-size:.85rem;color:var(--muted)}
+@media (max-width:560px){
+  .bar{height:64px} .seg span{display:none}
+  .wrap{padding-top:1.25rem}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  .testbtn,.quiz,.savebox,.badge{display:none!important}
+  body{background:#fff;color:#000;font-size:11pt}
+  .tools,.name input,details,.seg span,.mapnote{display:none!important}
+  .theme,.map{break-inside:avoid;border-color:#999}
+  .hide-done .goal.is-done,.hide-done .theme.complete{display:block}
+  .printname{display:block!important}
+}
+
+.goal{display:grid;grid-template-columns:1fr auto;align-items:start}
+.goal label{padding-right:.5rem}
+.testbtn{font:inherit;font-size:.85rem;font-weight:700;margin:.5rem 1.25rem 0 0;padding:.3rem .7rem;border-radius:999px;border:1.5px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;white-space:nowrap}
+.testbtn:hover,.testbtn[aria-expanded="true"]{border-color:var(--ink)}
+.badge[hidden]{display:none}
+.badge{display:inline-block;margin-left:.45rem;font-size:.75rem;font-weight:700;padding:0 .45rem;border-radius:999px;background:var(--done-soft);color:var(--done);vertical-align:2px}
+.quiz{grid-column:1/-1;margin:.2rem 1.25rem .8rem 3.5rem;padding:1rem 1.1rem;border-radius:10px;background:var(--paper);border:1.5px solid var(--line)}
+.quiz[hidden]{display:none}
+.qtext{margin:0 0 .8rem}
+.qtext sup{font-size:.72em}
+.ansrow{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.ansrow input{font:inherit;padding:.45rem .65rem;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:11rem;max-width:100%}
+.ansrow input.wide{width:100%}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink);font-weight:700}
+.opts{display:grid;gap:.45rem}
+.opt{font:inherit;text-align:left;padding:.55rem .8rem;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.4}
+.opt:hover{border-color:var(--muted)}
+.opt.right{border-color:var(--done);background:var(--done-soft)}
+.opt.wrong{border-color:#C2412D;opacity:.75;text-decoration:line-through}
+.fb{margin:.7rem 0 0;font-weight:700;min-height:0}
+.fb.ok{color:var(--done)} .fb.no{color:#C2412D}
+:root[data-theme="dark"] .fb.no,:root[data-theme="dark"] .opt.wrong{color:#F08A78;border-color:#F08A78}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .fb.no,:root:not([data-theme="light"]) .opt.wrong{color:#F08A78;border-color:#F08A78}}
+.qactions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.qactions .btn{font-size:.88rem;padding:.35rem .75rem}
+.sol{margin-top:.8rem;padding:.75rem .9rem;border-left:3px solid var(--done);background:var(--surface);border-radius:0 8px 8px 0}
+.sol[hidden]{display:none}
+pre.code{font:.9rem/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:.7rem .9rem;overflow-x:auto;margin:.6rem 0 0}
+.tw{overflow-x:auto;margin-top:.6rem}
+table.qt{width:auto;border-collapse:collapse;font-size:.92rem;background:var(--surface)}
+table.qt th,table.qt td{border:1px solid var(--line);padding:.3rem .7rem;text-align:center}
+table.qt th{font-weight:700}
+svg.fig{display:block;max-width:100%;height:auto;margin-top:.6rem}
+svg .db{fill:var(--d1)} svg .dg{fill:var(--done)}
+svg .sw{fill:var(--surface);stroke:var(--ink);stroke-width:1.2} svg .sg{fill:var(--done);stroke:var(--ink);stroke-width:1.2}
+svg .grid{stroke:var(--line);stroke-width:1} svg .gl2{stroke:var(--d2);stroke-width:2.5;fill:none}
+svg .ax{stroke:var(--muted);stroke-width:1.3;fill:none} svg .gl{stroke:var(--d1);stroke-width:2.5;fill:none}
+svg .hb{fill:var(--done-soft);stroke:var(--done);stroke-width:1.5}
+svg .lab{font-size:11px;fill:var(--muted);font-family:inherit}
+.minis{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.6rem}
+figure.mini{margin:0;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:.3rem .4rem}
+figure.mini figcaption{font-size:.85rem;font-weight:700;text-align:center}
+.savebox{background:var(--surface);border:1.5px solid var(--line);border-radius:14px;margin-top:1rem}
+.savebox summary{font-size:1rem;color:var(--ink)}
+.savebody{padding:0 1.25rem 1.1rem}
+.savebody p{margin:.2rem 0 .8rem;max-width:40rem}
+.coderow{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center;margin-bottom:.9rem}
+.codeout{font:700 1.05rem/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.06em;padding:.55rem .75rem;border:1.5px dashed var(--done);border-radius:8px;background:var(--paper);user-select:all;word-break:break-all}
+.coderow input{font:inherit;padding:.45rem .65rem;border:1.5px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);width:19rem;max-width:100%;text-transform:uppercase}
+.savemsg{font-weight:700;font-size:.92rem}
+@media (max-width:560px){.quiz{margin-left:1rem;margin-right:1rem}.testbtn{margin-right:.75rem}}
+
+.printname{display:none;font-size:1rem;margin-top:.3rem}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+<noscript><div style="margin:0 0 1.25rem;padding:1rem 1.2rem;border:2px solid #C2412D;border-radius:12px;background:#FFF4F1;color:#5A1A0E;font-weight:700;line-height:1.5">Skjemaet virker ikke i denne visningen. Trykk «Last ned» over, åpne filen du lastet ned, og bruk den derfra.</div></noscript>
+  <header>
+    <div>
+      <p class="course">Matematikk S1 (REA3060)</p>
+      <h1>Hvor ligger du an?</h1>
+      <p class="printname" id="printname"></p>
+    </div>
+    <div class="name">
+      <label for="navn">Navnet ditt</label>
+      <input id="navn" type="text" autocomplete="name" placeholder="Skriv navnet ditt">
+    </div>
+  </header>
+
+  <section class="map" aria-labelledby="maptitle">
+    <h2 id="maptitle" style="position:absolute;left:-9999px">Eksamenskartet</h2>
+    <div class="score">
+      <span class="big" id="pct">0 %</span>
+      <p id="scoretext">av eksamensoppgavene fra 2022–2026 handler om ting du har krysset av at du kan.</p>
+    </div>
+    <div class="bar" id="bar" role="list"></div>
+    <p class="mapnote">Hver blokk er et tema. Jo bredere blokken er, jo oftere har temaet kommet på eksamen. Blokken fylles opp når du krysser av. Trykk på en blokk for å hoppe til temaet.</p>
+  </section>
+
+  <div class="tools">
+    <label class="toggle"><input type="checkbox" id="hide"> Vis bare det jeg mangler</label>
+    <span class="spacer"></span>
+    <button class="btn" id="print" type="button">Skriv ut</button>
+    <button class="btn" id="reset" type="button">Nullstill</button>
+  </div>
+  <p style="margin:.25rem 0 0;color:var(--muted);font-size:.95rem">Kryss av når du føler deg ferdig med et delmål – altså at du kunne løst en eksamensoppgave om det alene. Usikker? Trykk «Test deg» og prøv en oppgave først.</p>
+  <details class="savebox" id="savebox">
+    <summary>Lagre fremgangen eller fortsett på en annen enhet</summary>
+    <div class="savebody">
+      <p>Avkrysningene lagres automatisk i denne nettleseren, så du kan lukke siden og fortsette senere. Bytter du PC, nettbrett eller nettleser – eller tømmer nettleserloggen – trenger du koden under. Ta bilde av den eller skriv den ned.</p>
+      <div class="coderow"><span class="codeout" id="codeout"></span><button class="btn" type="button" id="copy">Kopier koden</button><span class="savemsg" id="copymsg" aria-live="polite"></span></div>
+      <label for="codein" style="display:block;font-size:.9rem;color:var(--muted);margin-bottom:.25rem">Har du en kode fra før? Lim den inn her:</label>
+      <div class="coderow"><input id="codein" type="text" autocomplete="off" spellcheck="false" placeholder="F.eks. A1B2-C3D4-…"><button class="btn" type="button" id="load">Hent fremgang</button><span class="savemsg" id="loadmsg" aria-live="polite"></span></div>
+    </div>
+  </details>
+
+
+  <div id="themes"></div>
+  <div class="empty"><h3>Alt er krysset av</h3><p style="margin:.4rem 0 0">Slå av «Vis bare det jeg mangler» for å se hele listen igjen.</p></div>
+
+  <footer>
+    Temaene og oppgavelistene bygger på alle ni eksamenssettene fra våren 2022 til våren 2026. Avkrysningene lagres i denne nettleseren. Bruk lagringskoden for å ta dem med til en annen enhet. Testoppgavene er laget i samme stil som eksamensoppgavene, med nye tall hver gang.
+  </footer>
+</div>
+<script>
+// ---------- hjelpere ----------
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const P=a=>a[Math.floor(Math.random()*a.length)];
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+function nf(x,d){ if(d===undefined)d=4; let s=(Math.round(x*Math.pow(10,d))/Math.pow(10,d)).toFixed(d);
+  if(s.indexOf('.')>=0) s=s.replace(/0+$/,'').replace(/\.$/,'');
+  let parts=s.split('.'),i=parts[0],f=parts[1],neg=i[0]==='-'; if(neg)i=i.slice(1);
+  if(i.length>4) i=i.replace(/\B(?=(\d{3})+(?!\d))/g,'\u00A0');
+  if(neg&&(i!=='0'||f)) i='−'+i; return i+(f?','+f:''); }
+const ex=e=>`<sup>${e<0?'−'+(-e):e}</sup>`;
+const sf=(m,e)=>`${nf(m)} · 10${ex(e)}`;
+const pre=c=>`<pre class="code">${c.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</pre>`;
+function table(head,rows){return `<div class="tw"><table class="qt"><thead><tr>${head.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
+const num=(q,ans,tol,unit,sol)=>({type:'num',q,ans,tol:tol||1e-9,unit:unit||'',sol});
+function mc(q,correct,wrongs,sol){const seen=new Set([correct]);const w=[];wrongs.forEach(x=>{if(!seen.has(x)){seen.add(x);w.push(x);}});
+  const opts=sh([correct].concat(w.slice(0,3)));return {type:'mc',q,opts,correct:opts.indexOf(correct),sol};}
+function full(m,e){ // skriv m·10^e fullt ut
+  const s=String(m).replace('.',''); const intLen=String(Math.floor(m)).length+e;
+  if(e>0){ let d=s.padEnd(intLen,'0'); if(intLen<s.length) d=s.slice(0,intLen)+','+s.slice(intLen); return d.split(',')[0].replace(/\B(?=(\d{3})+(?!\d))/g,'\u00A0')+(d.split(',')[1]?','+d.split(',')[1]:''); }
+  return '0,'+'0'.repeat(-e-1)+s; }
+function poly(terms){ // [[koef,'x<sup>2</sup>'],[koef,'x'],[koef,'']]
+  let out=''; terms.forEach(([c,v],i)=>{ if(c===0)return; const a=Math.abs(c); const cs=(a===1&&v)?'':nf(a);
+    if(!out) out=(c<0?'−':'')+cs+v; else out+=(c<0?' − ':' + ')+cs+v; }); return out||'0'; }
+function dotsSVG(figs){ // figs: [{rows,cols,extra}] tegner sirkler
+  const r=5,g=13; let x=10,parts=[],h=0;
+  figs.forEach((f,k)=>{ const cols=Math.max(f.cols,f.extra||0); let y=10;
+    if(f.extra){ for(let i=0;i<f.extra;i++) parts.push(`<circle cx="${x+i*g+r}" cy="${y+r}" r="${r}" class="dg"/>`); y+=g; }
+    for(let rr=0;rr<f.rows;rr++){ for(let c=0;c<f.cols;c++) parts.push(`<circle cx="${x+c*g+r}" cy="${y+r}" r="${r}" class="db"/>`); y+=g; }
+    h=Math.max(h,y); parts.push(`<text x="${x}" y="__Y__" class="lab">Figur ${k+1}</text>`); x+=cols*g+26; });
+  const H=h+22; return `<svg class="fig" viewBox="0 0 ${x} ${H}" width="${Math.round(x*1.4)}" height="${Math.round(H*1.4)}" role="img" aria-label="Figur 1 til ${figs.length}">${parts.join('').replace(/__Y__/g,h+14)}</svg>`; }
+const fF=(m,c)=>`F(n) = ${m===1?'':m}n${c>0?' + '+c:c<0?' − '+(-c):''}`;
+function regLine(xs,ys){const n=xs.length,mx=xs.reduce((a,b)=>a+b)/n,my=ys.reduce((a,b)=>a+b)/n;let sxy=0,sxx=0;xs.forEach((x,i)=>{sxy+=(x-mx)*(ys[i]-my);sxx+=(x-mx)*(x-mx);});const s=sxy/sxx;return [s,my-s*mx];}
+
+const GBASE={
+prosent:[
+()=>{const N=P([1200,2400,3500,4500,5200,800,6000]),p=P([5,15,20,25,35,40]),a=N*p/100;
+ return num(`En bonde leverer ${nf(N)} egg. ${p} % av eggene er brune. Hvor mange egg er brune?`,a,0,'egg',`${p} % = ${nf(p/100)}. Regn ${nf(N)} · ${nf(p/100)} = <b>${nf(a)} egg</b>.`);},
+()=>{const o=P([200,300,400,500,800,1200]),p=P([5,10,15,20,25,30]),up=Math.random()<.6,n=o*(1+(up?1:-1)*p/100),d=Math.abs(n-o);
+ return num(`Prisen på en vare gikk fra ${nf(o)} kr til ${nf(n)} kr. Hvor mange prosent ${up?'økte':'sank'} prisen?`,p,0.01,'%',`Endringen er ${nf(d)} kr. Del på den opprinnelige prisen: ${nf(d)} / ${nf(o)} = ${nf(p/100)} = <b>${p} %</b>.`);},
+()=>{if(Math.random()<.5){const b=P([40,60,80,120,200,240]),p=P([10,20,25,30,40,50]),d=b*p/100;
+ return num(`Prisen på en vare ble satt opp med ${d} kr. Det svarte til ${p} %. Hva kostet varen før?`,b,0.01,'kr',`${p} % er ${d} kr, så 1 % er ${d} / ${p} = ${nf(d/p)} kr. 100 % er da ${nf(d/p)} · 100 = <b>${b} kr</b>.`);}
+ const [t,pc]=P([[25,12],[25,8],[40,5],[50,6],[20,15],[60,5],[75,4]]),m=t*pc/100;
+ return num(`${100-pc} % av elevene i en klasse blir med på tur. ${m} elever blir ikke med. Hvor mange elever er det i klassen?`,t,0,'elever',`De ${m} elevene som ikke blir med, er ${pc} % av klassen. 1 % er ${m} / ${pc} = ${nf(m/pc)}, så 100 % er <b>${t} elever</b>.`);},
+()=>{const a=P([4,5,8,10,20]),r=P([0.1,0.2,0.25,0.5]),b=a*(1-r),d=a-b,R1=nf(r*100);
+ return mc(`Renta på et lån gikk ned fra ${nf(a)} % til ${nf(b)} %. Hvilket utsagn stemmer?`,
+ `Renta gikk ned ${nf(d)} prosentpoeng, og det er ${R1} % lavere rente.`,
+ [`Renta gikk ned ${nf(d)} %, og det er ${R1} prosentpoeng lavere rente.`,`Renta gikk ned ${nf(d)} prosentpoeng, og det er ${nf(d)} % lavere rente.`,`Renta gikk ned ${R1} prosentpoeng, og det er ${nf(d)} % lavere rente.`],
+ `Prosentpoeng er forskjellen mellom prosenttallene: ${nf(a)} − ${nf(b)} = ${nf(d)} prosentpoeng. Prosent sier hvor stor endringen er i forhold til der vi startet: ${nf(d)} / ${nf(a)} = ${nf(r)} = ${R1} %.`);},
+()=>{const p=P([3,5,12,15,20,35]),c=R(0,3);
+ if(c===0)return num(`En verdi øker med ${p} %. Hva er vekstfaktoren?`,1+p/100,1e-6,'',`Vekstfaktor = 1 + ${p}/100 = <b>${nf(1+p/100)}</b>.`);
+ if(c===1)return num(`En verdi synker med ${p} %. Hva er vekstfaktoren?`,1-p/100,1e-6,'',`Vekstfaktor = 1 − ${p}/100 = <b>${nf(1-p/100)}</b>.`);
+ if(c===2)return num(`Vekstfaktoren er ${nf(1-p/100)}. Hvor mange prosent har verdien sunket?`,p,1e-6,'%',`1 − ${nf(1-p/100)} = ${nf(p/100)}, altså <b>${p} %</b> nedgang.`);
+ return num(`Vekstfaktoren er ${nf(1+p/100)}. Hvor mange prosent har verdien økt?`,p,1e-6,'%',`${nf(1+p/100)} − 1 = ${nf(p/100)}, altså <b>${p} %</b> økning.`);},
+()=>{const v=P([200,400,500,800,1000]),p=P([10,20,25,50]),f=v*(1-p/100)*(1+p/100);
+ return num(`En jakke koster ${v} kr. Prisen settes først ned med ${p} %, og senere opp igjen med ${p} %. Hva koster jakken nå?`,f,0.01,'kr',`${v} · ${nf(1-p/100)} · ${nf(1+p/100)} = <b>${nf(f,2)} kr</b>. Jakken blir billigere enn før, fordi økningen regnes av et mindre beløp.`);},
+()=>{const b=P([8000,40000,2500]),a=P([5,10,20]),c=P([15,25,30]),s=`Startprisen var ${nf(b)} kr. Prisen økte med`;
+ return mc(`Prisen på en sykkel etter tre prisendringer kan skrives som ${nf(b)} · ${nf(1+a/100)} · ${nf(1-c/100)}${ex(2)}. Hva forteller uttrykket?`,
+ `${s} ${a} %, og sank deretter med ${c} % to ganger.`,
+ [`${s} ${a} %, og sank deretter med ${100-c} % to ganger.`,`${s} ${nf(1+a/100)} %, og sank deretter med ${nf(1-c/100)} % to ganger.`,`${s} ${a} %, og sank deretter med ${2*c} % én gang.`],
+ `${nf(1+a/100)} er vekstfaktoren for en økning på ${a} %. ${nf(1-c/100)} er vekstfaktoren for en nedgang på ${c} %, og kvadratet betyr at den nedgangen skjer to ganger.`);},
+()=>{const [n1,p1,n2,p2,r]=P([[2,32,4,48,25],[3,60,5,80,20],[2,50,5,100,20],[4,40,10,75,25],[2,30,6,72,20]]);
+ return num(`Bakeriet har to tilbud på boller: ${n1} for ${p1} kr eller ${n2} for ${p2} kr. Hvor mange prosent lavere er prisen per bolle i det største tilbudet?`,r,0.01,'%',`Pris per bolle: ${p1}/${n1} = ${nf(p1/n1)} kr og ${p2}/${n2} = ${nf(p2/n2)} kr. Forskjellen er ${nf(p1/n1-p2/n2)} kr, og ${nf(p1/n1-p2/n2)} / ${nf(p1/n1)} = <b>${r} %</b>.`);},
+()=>{const K=P([10000,20000,50000,100000]),r=P([3,4,5,6.8]),n=P([3,5,10]),a=K*Math.pow(1+r/100,n);
+ return num(`Du setter inn ${nf(K)} kr på en konto med ${nf(r)} % rente per år. Hvor mye står på kontoen etter ${n} år? Rund av til hele kroner.`,a,1,'kr',`${nf(K)} · ${nf(1+r/100,3)}${ex(n)} ≈ <b>${nf(Math.round(a))} kr</b>.`);},
+()=>{const a=P([20,30,40]),p=P([5,10]),n=P([8,10,12]),q=1+p/100,S=a*(Math.pow(q,n)-1)/(q-1);
+ return num(`Sander løper ${a} km den første uka. Hver uke løper han ${p} % lenger enn uka før. Hvor langt løper han til sammen på ${n} uker? Rund av til hele km.`,S,0.6,'km',`Uke 1: ${a} km, uke 2: ${a} · ${nf(q)}, uke 3: ${a} · ${nf(q)}${ex(2)}, … uke ${n}: ${a} · ${nf(q)}${ex(n-1)}. Legg sammen alle ukene i regneark eller med en løkke i Python. Summen blir <b>${nf(Math.round(S))} km</b>.`);}
+],
+sentral:[
+()=>{const vals=sh([1,2,3,4,5,6,7,8,9,10,11,12,13,14]).slice(0,6),dup=P(vals),d=vals.concat([dup]),s=d.slice().sort((a,b)=>a-b),k=R(0,3),sum=d.reduce((a,b)=>a+b);
+ const names=['gjennomsnittet','medianen','typetallet','variasjonsbredden'],ans=[sum/7,s[3],dup,s[6]-s[0]][k];
+ const sol=['Summen er '+sum+'. '+sum+' / 7 ≈ <b>'+nf(sum/7,2)+'</b>.','Sortert: '+s.join(', ')+'. Det midterste tallet (nr. 4) er <b>'+s[3]+'</b>.','Tallet som forekommer flest ganger er <b>'+dup+'</b>.','Største minus minste: '+s[6]+' − '+s[0]+' = <b>'+(s[6]-s[0])+'</b>.'][k];
+ return num(`Antall vogner på sju tog: ${sh(d).join(', ')}. Finn ${names[k]}.${k===0?' Rund av til én desimal.':''}`,ans,k===0?0.051:0,'',sol);},
+()=>{const d=Array.from({length:6},()=>R(2,20)),n=6,m=d.reduce((a,b)=>a+b)/n,ss=d.reduce((a,x)=>a+(x-m)*(x-m),0),sp=Math.sqrt(ss/n),su=Math.sqrt(ss/(n-1));
+ const q=num(`Antall fraværsdager hos seks ansatte: ${d.join(', ')}. Bruk digitalt verktøy til å finne standardavviket. Rund av til én desimal.`,[sp,su],0.051,'',`Gjennomsnittet er ${nf(m,2)}. Standardavviket er <b>${nf(sp,1)}</b> (σ). Får du ${nf(su,1)}, har verktøyet regnet utvalgsstandardavvik (s) – det godtas også. Standardavviket forteller omtrent hvor langt tallene i snitt ligger fra gjennomsnittet.`);return q;},
+()=>{const sc=P([['Månedslønnen til seks ansatte i en liten bedrift er 30 000, 32 000, 33 000, 35 000, 36 000 og 250 000 kroner.','en typisk lønn'],['Seks hus i en gate ble solgt for 3,1, 3,4, 3,5, 3,6, 3,8 og 25 millioner kroner.','en typisk huspris']]);
+ return mc(`${sc[0]} Hvilket sentralmål gir best bilde av ${sc[1]}?`,'Medianen, fordi én verdi er mye større enn de andre og drar gjennomsnittet opp.',['Gjennomsnittet, fordi alle verdiene er tatt med.','Typetallet, fordi det er den vanligste verdien.','Variasjonsbredden, fordi den viser forskjellen mellom største og minste verdi.'],'Én ekstrem verdi (en uteligger) trekker gjennomsnittet langt opp. Medianen påvirkes nesten ikke, og viser derfor best hva som er vanlig.');},
+()=>{const M=R(5,10),G=M+P([-2,-1,1,2,3]);let ex1=[M,M,M,M,M],diff=5*(G-M);if(diff>0)ex1[4]+=diff;else{const h=Math.floor(-diff/2);ex1[0]-=(-diff-h);ex1[1]-=h;}
+ return {type:'list',q:`Lag et datasett med fem tall der medianen er ${M} og gjennomsnittet er ${G}. Skriv tallene med mellomrom mellom.`,M,G,
+ sol:`Ett mulig svar: ${ex1.join(' ')}. Sett det midterste tallet lik ${M}. Summen av de fem tallene må være 5 · ${G} = ${5*G}, så juster de andre tallene til summen stemmer – uten at ${M} slutter å være i midten.`};},
+()=>{const n1=P([5,10,20]),n=n1-1,m=P([20,25,30,40]),a=R(m+10,m+40),nm=(n*m+a)/n1;
+ return num(`Gjennomsnittsalderen til ${n} personer i et rom er ${m} år. Så kommer en person på ${a} år inn i rommet. Hva er gjennomsnittsalderen nå? Rund av til én desimal.`,nm,0.051,'år',`Summen av alderen før: ${n} · ${m} = ${n*m}. Med den nye personen: ${n*m+a}. Del på ${n1}: ${n*m+a} / ${n1} = <b>${nf(nm,2)} år</b>.`);},
+()=>{const m=nf(R(36,46)/10,1),lo=nf(R(4,8)/10,1),hi=nf(R(13,18)/10,1),aHi=Math.random()<.5;
+ return mc(`To klasser hadde samme prøve. Klasse A fikk gjennomsnitt ${m} og standardavvik ${aHi?hi:lo}. Klasse B fikk gjennomsnitt ${m} og standardavvik ${aHi?lo:hi}. Hvilket utsagn stemmer best?`,
+ `Resultatene i klasse ${aHi?'A':'B'} er mer spredt enn i klasse ${aHi?'B':'A'}.`,[`Klasse ${aHi?'A':'B'} gjorde det best, fordi standardavviket er høyest.`,'Klassene har helt like resultater, fordi gjennomsnittet er likt.',`Alle i klasse ${aHi?'B':'A'} fikk karakteren ${m}.`],
+ 'Likt gjennomsnitt betyr at klassene i snitt gjorde det like bra. Høyere standardavvik betyr at resultatene er mer spredt – flere veldig gode og flere svake.');}
+],
+potens:[
+()=>{const m=P([1.5,2.4,3.2,4.5,7,8.1,6.25]),e=P([-5,-4,-3,4,5,6,7,8]);
+ return mc(`Hvordan skrives ${full(m,e)} på standardform?`,sf(m,e),[sf(m,e+1),sf(m,e-1),sf(m,-e)],`Flytt kommaet slik at tallet foran blir mellom 1 og 10: ${nf(m)}. Kommaet flyttes ${Math.abs(e)} plasser ${e>0?'til venstre':'til høyre'}, så eksponenten blir ${e}. Svar: <b>${sf(m,e)}</b>.`);},
+()=>{if(Math.random()<.55){const a=R(2,9),b=R(2,9),m=R(2,8),n=P([-4,-3,-2,2,3,4,5]),pr=a*b,big=pr>=10,M=big?pr/10:pr,E=m+n+(big?1:0);
+ return mc(`Regn ut og skriv svaret på standardform: (${sf(a,m)}) · (${sf(b,n)})`,sf(M,E),[sf(M,big?E-1:E+1),sf(M,m*n),sf(M,E+2),sf(a+b>=10?(a+b)/10:a+b,E)],`Gang tallene for seg og potensene for seg: ${a} · ${b} = ${pr} og 10${ex(m)} · 10${ex(n)} = 10${ex(m+n)}. ${big?`${pr} · 10${ex(m+n)} = ${sf(M,E)}, fordi ${pr} = ${nf(M)} · 10.`:''} Svar: <b>${sf(M,E)}</b>.`);}
+ const [b,q]=P([[2,2],[2,3],[2,4],[3,3]]),a=b*q,m=R(6,12),n=R(2,5);
+ return mc(`Regn ut og skriv svaret på standardform: (${sf(a,m)}) / (${sf(b,n)})`,sf(q,m-n),[sf(q,m+n),sf(q,m-n-1),sf(q,m-n+1)],`Del tallene for seg og potensene for seg: ${a} / ${b} = ${q} og 10${ex(m)} / 10${ex(n)} = 10${ex(m-n)}. Svar: <b>${sf(q,m-n)}</b>.`);},
+()=>{const [e,a,s]=P([[`2${ex(-1)}`,0.5,'2<sup>−1</sup> = 1/2'],[`5${ex(0)}`,1,'Alle tall (unntatt 0) opphøyd i 0 er 1'],[`10${ex(-2)}`,0.01,'10<sup>−2</sup> = 1/100'],[`4${ex(-1)}`,0.25,'4<sup>−1</sup> = 1/4'],[`2${ex(3)} · 2${ex(2)}`,32,'Legg sammen eksponentene: 2<sup>5</sup> = 32'],[`(3${ex(2)})${ex(2)}`,81,'Gang eksponentene: 3<sup>4</sup> = 81'],[`10${ex(5)} / 10${ex(3)}`,100,'Trekk fra eksponentene: 10<sup>2</sup> = 100'],[`7${ex(0)} + 2${ex(-1)}`,1.5,'1 + 1/2 = 1,5'],[`3${ex(-2)} · 9`,1,'3<sup>−2</sup> = 1/9, og 1/9 · 9 = 1'],[`5${ex(2)} · 5${ex(-1)}`,5,'Legg sammen eksponentene: 5<sup>1</sup> = 5'],[`2${ex(-2)}`,0.25,'2<sup>−2</sup> = 1/2<sup>2</sup> = 1/4'],[`10${ex(-3)} · 10${ex(5)}`,100,'Legg sammen eksponentene: 10<sup>2</sup> = 100']]);
+ return num(`Regn ut uten kalkulator: ${e}. Skriv svaret som et desimaltall.`,a,1e-9,'',`${s}. Svar: <b>${nf(a)}</b>.`);},
+()=>{const pool=[['√16',4],[`2${ex(3)}`,8],[`3${ex(2)}`,9],[`5${ex(0)}`,1],[`10${ex(-1)}`,0.1],[`2${ex(-1)}`,0.5],[`0,3 · 10${ex(1)}`,3],['√36',6],[`4${ex(-1)}`,0.25],[`10${ex(-2)}`,0.01],['√49',7],[`0,02 · 10${ex(2)}`,2]];
+ const pk=sh(pool).slice(0,4),big=Math.random()<.5,s=pk.slice().sort((a,b)=>a[1]-b[1]),c=big?s[3]:s[0];
+ return mc(`Hvilket av disse tallene er ${big?'størst':'minst'}?`,c[0],pk.filter(x=>x!==c).map(x=>x[0]),`Regn ut hvert tall: ${s.map(x=>x[0]+' = '+nf(x[1])).join(', ')}. ${big?'Størst':'Minst'} er <b>${c[0]}</b>.`);},
+()=>{const a=R(2,9),b=R(2,9),m=R(3,6),n=R(2,5),ans=a*b*Math.pow(10,m-n);
+ return num(`Regn ut uten kalkulator: ${full(a,m)} · ${full(b,-n)}`,ans,Math.abs(ans)*1e-9,'',`Skriv om til potenser: ${a} · 10${ex(m)} · ${b} · 10${ex(-n)} = ${a*b} · 10${ex(m-n)} = <b>${nf(ans,8)}</b>.`);},
+()=>{const c=R(0,2);if(c===0){const x=P([2,3,5,8]);return mc(`En bakterie er ${x} µm (mikrometer) lang. 1 µm = 10${ex(-6)} m. Hvor lang er bakterien i meter?`,sf(x,-6),[sf(x,-3),sf(x,-9),sf(x,6)],`${x} µm = ${x} · 10${ex(-6)} m. Svar: <b>${sf(x,-6)} m</b>.`);}
+ if(c===1){const y=P([2,4,6]);return mc(`Hvor mange centimeter er ${y} km? Svar på standardform.`,sf(y,5),[sf(y,3),sf(y,6),sf(y,4)],`1 km = 1000 m = 100 000 cm = 10${ex(5)} cm. Så ${y} km = <b>${sf(y,5)} cm</b>.`);}
+ const L=P([150,200]),pp=P([700000,300000]),t=L*pp*30,e=Math.floor(Math.log10(t)),m=t/Math.pow(10,e);
+ return mc(`En person bruker ${L} liter vann per døgn. Hvor mange liter bruker ${nf(pp)} personer på 30 døgn? Svar på standardform.`,sf(m,e),[sf(m,e-1),sf(m,e+1),sf(m,e-2)],`${L} · ${nf(pp)} · 30 = ${nf(t)} = <b>${sf(m,e)} liter</b>.`);}
+],
+prop:[
+()=>{const c=R(0,2),xs=[1,2,3,4,6];let ys,ans;
+ if(c===0){const k=R(2,7);ys=xs.map(x=>k*x);ans='y er proporsjonal med x';}else if(c===1){const k=R(2,6),cc=R(2,9);ys=xs.map(x=>k*x+cc);ans='y er verken proporsjonal eller omvendt proporsjonal med x';}else{const K=P([12,24,60]);ys=xs.map(x=>K/x);ans='y er omvendt proporsjonal med x';}
+ return mc(`Se på tabellen. Hva stemmer?${table(['x'].concat(xs),[['y'].concat(ys)])}`,ans,['y er proporsjonal med x','y er omvendt proporsjonal med x','y er verken proporsjonal eller omvendt proporsjonal med x'],`Sjekk y / x og x · y. Er y / x likt hver gang, er de proporsjonale. Er x · y likt hver gang, er de omvendt proporsjonale. Her er y / x: ${xs.map((x,i)=>nf(ys[i]/x,2)).join(', ')} og x · y: ${xs.map((x,i)=>nf(ys[i]*x,2)).join(', ')}. Svar: <b>${ans}</b>.`);},
+()=>{const hyp=(()=>{let d='';for(let i=0;i<=24;i++){const x=0.45+i*0.15,y=2.2/x,px=10+x*30,py=100-y*14;d+=(i?' L ':'M ')+px.toFixed(1)+' '+Math.max(py,8).toFixed(1);}return d;})();
+ const G=[['prop','M 10 100 L 130 22'],['omv',hyp],['lin','M 10 72 L 130 22'],['ned','M 10 30 L 130 92']],order=sh(G),L='ABCD',askP=Math.random()<.5,want=askP?'prop':'omv';
+ const svg=order.map((g,i)=>`<figure class="mini"><svg viewBox="0 0 140 112" width="140" height="112" aria-label="Graf ${L[i]}"><path d="M10 8 V100 H134" class="ax"/><path d="${g[1]}" class="gl"/><text x="2" y="110" class="lab">0</text></svg><figcaption>Graf ${L[i]}</figcaption></figure>`).join('');
+ const ci=order.findIndex(g=>g[0]===want);
+ const qq=mc(`Hvilken graf viser ${askP?'proporsjonale':'omvendt proporsjonale'} størrelser?<div class="minis">${svg}</div>`,'Graf '+L[ci],[0,1,2,3].filter(i=>i!==ci).map(i=>'Graf '+L[i]),'Proporsjonale størrelser gir en rett linje gjennom origo. Omvendt proporsjonale størrelser gir en kurve som synker raskt og så flater ut, og som aldri treffer aksene. En rett linje som ikke går gjennom origo er ikke proporsjonal.');qq.opts=['Graf A','Graf B','Graf C','Graf D'];qq.correct=ci;return qq;},
+()=>{if(Math.random()<.5){const [a,b]=P([[4,10],[5,30],[8,20],[3,12],[6,9]]);return num(`x og y er proporsjonale. Når x = ${a}, er y = ${b}. Hva er k i uttrykket y = k · x?`,b/a,1e-6,'',`k = y / x = ${b} / ${a} = <b>${nf(b/a)}</b>.`);}
+ const [a,b]=P([[4,15],[6,8],[2,9],[5,7],[3,20]]);return num(`x og y er omvendt proporsjonale. Når x = ${a}, er y = ${b}. Hva er k i uttrykket y = k / x?`,a*b,1e-6,'',`k = x · y = ${a} · ${b} = <b>${a*b}</b>.`);},
+()=>{if(Math.random()<.5)return mc('En taxi koster 50 kr i startpris og 15 kr per km. Er prisen proporsjonal med antall km?','Nei. Prisen er ikke 0 kr når turen er 0 km, så pris / km er ikke konstant.',['Ja, fordi prisen øker når antall km øker.','Ja, fordi prisen per km alltid er 15 kr.','Nei, fordi prisen er omvendt proporsjonal med antall km.'],'For at to størrelser skal være proporsjonale, må forholdet mellom dem være likt hele tiden, og grafen må gå gjennom origo. Startprisen på 50 kr gjør at grafen starter på 50.');
+ return mc('En klasse leier en hytte til 15 000 kr som deles likt. I tillegg betaler hver elev 250 kr for mat. Er prisen per elev omvendt proporsjonal med antall elever?','Nei. Hyttedelen er omvendt proporsjonal, men de faste 250 kr gjør at pris · antall elever ikke blir konstant.',['Ja, fordi prisen per elev blir lavere jo flere elever det er.','Ja, fordi 15 000 kr deles likt på alle.','Nei, fordi prisen er proporsjonal med antall elever.'],'P(x) = 15 000/x + 250. Prøv x = 10: P = 1750, og 10 · 1750 = 17 500. Prøv x = 20: P = 1000, og 20 · 1000 = 20 000. Produktet er ikke likt, så det er ikke omvendt proporsjonalitet.');},
+()=>{const k=P([80,120,150,200,240]),w=P([250,400,750,1400,600]),a=k*w/1000;
+ return num(`1 kg kyllingfilet koster ${k} kr. Hva skulle ${w} g kostet hvis prisen er proporsjonal med vekten?`,a,0.01,'kr',`${w} g = ${nf(w/1000)} kg. ${nf(w/1000)} · ${k} = <b>${nf(a,2)} kr</b>.`);},
+()=>{const K=P([12,18,24,36]),dv={12:[2,3,4,6],18:[2,3,6,9],24:[3,4,6,8],36:[3,4,6,9]}[K],a=P(dv),b=P(dv.filter(x=>x!==a)),c=P(dv.filter(x=>x!==a&&x!==b));
+ const pt=(x,y)=>`(${x}, ${nf(y)})`;
+ return mc(`Hvilket punkt ligger på grafen til y = ${K} / x?`,pt(a,K/a),[pt(a,K-a),pt(b,K/b+1),pt(c,2*K/c),pt(a,K/a+2)],`Sjekk at x · y = ${K}: ${a} · ${nf(K/a)} = ${K}. Grafen til en omvendt proporsjonal sammenheng er en kurve som synker raskt først og så flater ut, og den krysser aldri aksene. Svar: <b>${pt(a,K/a)}</b>.`);}
+],
+funk:[
+()=>{const A=R(30,60)*1000,s=R(2,12)*100,B=A+10*s,v=A+20*s;
+ return num(`En by hadde ${nf(A)} innbyggere i 2010 og ${nf(B)} innbyggere i 2020. Lag en lineær modell. Hvor mange innbyggere gir modellen for år 2030?`,v,0.5,'',`Stigningstallet er (${nf(B)} − ${nf(A)}) / 10 = ${nf(s)} innbyggere per år. Modell: f(x) = ${nf(s)}x + ${nf(A)}, der x er år etter 2010. f(20) = <b>${nf(v)}</b>.`);},
+()=>{const s=P([500,800,1200]),b=P([1.05,1.08,1.12]),K=s*P([2,3]),x=Math.log(K/s)/Math.log(b);
+ return num(`Tegn grafen til f(x) = ${s} · ${nf(b)}<sup>x</sup> i GeoGebra. For hvilken x er f(x) = ${nf(K)}? Rund av til én desimal.`,x,0.06,'',`Skriv inn y = ${K} og bruk «Skjæring mellom to objekt». Skjæringspunktet har x ≈ <b>${nf(x,1)}</b>.`);},
+()=>{const F=P([200,300,400,500]),a=P([10,15,20,25]),b=a+P([20,25,30,35,40]),x=F/(b-a),n=Math.floor(x)+1;
+ return num(`Treningssenter: Avtale A koster ${F} kr per måned pluss ${a} kr per besøk. Avtale B koster ${b} kr per besøk. Hvor mange besøk i måneden må du minst ha for at avtale A skal være billigst?`,n,0,'besøk',`A(x) = ${a}x + ${F} og B(x) = ${b}x. De er like dyre når ${F} + ${a}x = ${b}x, altså x = ${F} / ${b-a} ≈ ${nf(x,2)}. A er billigst fra og med <b>${n} besøk</b>.`);},
+()=>{const s=P([1600,620,5000]),b=P([1.045,1.12,0.95,0.88]),up=b>1,pc=nf(Math.abs(b-1)*100,1),w=up?'øker':'synker';
+ return mc(`Antall solgte flasker per måned kan beskrives med modellen P(x) = ${nf(s)} · ${nf(b,3)}<sup>x</sup>, der x er antall måneder fra nå. Hva betyr tallet ${nf(b,3)}?`,`Salget ${w} med ${pc} % per måned.`,[`Salget ${w} med ${nf(b,3)} % per måned.`,`Salget ${w} med ${nf(b,3)} flasker per måned.`,`Salget var ${nf(b,3)} flasker i starten.`],`${nf(b,3)} er vekstfaktoren. ${up?`${nf(b,3)} − 1 = ${nf(b-1,3)}`:`1 − ${nf(b,3)} = ${nf(1-b,3)}`}, altså ${pc} % ${up?'økning':'nedgang'} per måned. ${nf(s)} er startverdien.`);},
+()=>{const a=P([-0.5,-1,-2]),h=R(2,8),k=R(10,50),b=-2*a*h,c=a*h*h+k;
+ return num(`Hva er den største verdien til funksjonen f(x) = ${poly([[a,'x<sup>2</sup>'],[b,'x'],[c,'']])}? Bruk gjerne GeoGebra.`,k,1e-6,'',`Bruk «Ekstremalpunkt» i GeoGebra. Toppunktet er (${h}, ${k}), så den største verdien er <b>${k}</b>.`);},
+()=>{const p=P([0.5,1,2]),q=R(1,5),a=R(0,3),b=a+R(2,4),f=x=>p*x*x+q*x,v=(f(b)-f(a))/(b-a);
+ return num(`f(x) = ${poly([[p,'x<sup>2</sup>'],[q,'x']])}. Finn den gjennomsnittlige vekstfarten fra x = ${a} til x = ${b}.`,v,0.01,'',`f(${a}) = ${nf(f(a))} og f(${b}) = ${nf(f(b))}. Gjennomsnittlig vekstfart = (${nf(f(b))} − ${nf(f(a))}) / (${b} − ${a}) = <b>${nf(v,2)}</b>.`);}
+],
+modell:[
+()=>{const k=P(['eksp','lin','pot']);
+ if(k==='eksp'){const a=R(100,500),b=P([1.06,1.12,1.2,0.9,0.85]),xs=[0,1,2,3,4],ys=xs.map(x=>Math.round(a*Math.pow(b,x))),[s]=regLine(xs,ys.map(Math.log)),bh=Math.exp(s);
+  return num(`Bruk eksponentiell regresjon på tabellen. Modellen har formen f(x) = a · b<sup>x</sup>. Hva er b? Rund av til to desimaler.${table(['x'].concat(xs),[['y'].concat(ys)])}`,bh,0.0101,'',`I GeoGebra: legg tallene i regnearket, marker dem og velg «Regresjonsanalyse» med eksponentiell modell (eller RegEksp). Du får b ≈ <b>${nf(bh,2)}</b>.`);}
+ if(k==='lin'){const a=R(5,40),s=R(3,15),xs=[0,1,2,3,4],ys=xs.map(x=>a+s*x+R(-2,2)),[sl]=regLine(xs,ys);
+  return num(`Bruk lineær regresjon på tabellen. Modellen har formen f(x) = ax + b. Hva er stigningstallet a? Rund av til én desimal.${table(['x'].concat(xs),[['y'].concat(ys)])}`,sl,0.051,'',`Velg lineær regresjon (RegLin) i GeoGebra. Stigningstallet blir <b>${nf(sl,1)}</b>.`);}
+ const a=R(20,80),p=P([0.5,0.7,1.3]),xs=[1,2,3,4,5],ys=xs.map(x=>Math.round(a*Math.pow(x,p)*10)/10),[s]=regLine(xs.map(Math.log),ys.map(Math.log));
+ return num(`Bruk potensregresjon på tabellen. Modellen har formen f(x) = a · x<sup>b</sup>. Hva er b? Rund av til to desimaler.${table(['x'].concat(xs),[['y'].concat(ys.map(y=>nf(y,1)))])}`,s,0.02,'',`Velg potensregresjon (RegPot) i GeoGebra. Du får b ≈ <b>${nf(s,2)}</b>.`);},
+()=>{const lin=Math.random()<.5,xs=[0,1,2,3,4];let ys;if(lin){const s=R(5,40),d=R(3,12);ys=xs.map(x=>s+d*x);}else{const [s,f]=P([[16,1.5],[5,2],[10,2],[32,1.5]]);ys=xs.map(x=>s*Math.pow(f,x));}
+ const A='Lineær, fordi y øker med like mye for hver x.',B='Eksponentiell, fordi y ganges med samme tall for hver x.';
+ return mc(`Hvilken type modell passer best til tabellen?${table(['x'].concat(xs),[['y'].concat(ys.map(y=>nf(y)))])}`,lin?A:B,[lin?B:A,'Lineær, fordi y blir dobbelt så stor hele tiden.','Eksponentiell, fordi y øker med samme antall hver gang.'],`Se på forskjellene: ${ys.slice(1).map((y,i)=>nf(y-ys[i])).join(', ')}. Og forholdene: ${ys.slice(1).map((y,i)=>nf(y/ys[i],2)).join(', ')}. ${lin?'Forskjellene er like, så modellen er lineær.':'Forholdene er like, så modellen er eksponentiell.'}`);},
+()=>{const A=P([5000,4000]),b=P([0.95,0.9,0.92]),C=P([1000,500]),K=C+A*P([0.5,0.3,0.6]),x=Math.log((K-C)/A)/Math.log(b),n=Math.floor(x)+1;
+ return num(`Utslippet fra en fabrikk er U(x) = ${nf(A)} · ${nf(b)}<sup>x</sup> + ${nf(C)} tonn, der x er antall år fra nå. Etter hvor mange hele år er utslippet for første gang under ${nf(K)} tonn?`,n,0,'år',`Tegn U og linja y = ${K} i GeoGebra og finn skjæringspunktet: x ≈ ${nf(x,2)}. Første hele år med utslipp under ${nf(K)} tonn er etter <b>${n} år</b>.`);},
+()=>{const T=P([4,5,6,8,10]),half=Math.random()<.6,b=Math.pow(half?0.5:2,1/T);
+ return num(`En størrelse ${half?'halveres':'dobles'} hvert ${T}. år. Hva er vekstfaktoren per år? Rund av til tre desimaler.`,b,0.00051,'',`Etter ${T} år er størrelsen ganget med ${half?'0,5':'2'}, så b${ex(T)} = ${half?'0,5':'2'}. Da er b = ${half?'0,5':'2'}<sup>1/${T}</sup> ≈ <b>${nf(b,3)}</b>. Det betyr ${half?'en nedgang':'en økning'} på ${nf(Math.abs(b-1)*100,1)} % per år.`);},
+()=>{const p=P([0.2,0.5,-0.4]),q=R(-3,6),r=R(0,20),a=R(1,6),v=2*p*a+q;
+ return num(`f(x) = ${poly([[p,'x<sup>2</sup>'],[q,'x'],[r,'']])}. Bruk GeoGebra til å finne vekstfarten når x = ${a} (stigningstallet til tangenten).`,v,0.01,'',`Skriv Tangent(${a}, f) i GeoGebra, eller f′(${a}). Stigningstallet til tangenten er <b>${nf(v,2)}</b>.`);},
+()=>{if(Math.random()<.5)return mc('Salget av iste er gitt ved F(x) = 620 · 1,045<sup>x</sup>, der x er antall måneder. Hvorfor bør vi ikke bruke modellen til å si noe om salget om 50 år?','Modellen vokser uten grense, mens salget i virkeligheten har en øvre grense.',['Eksponentielle modeller gjelder bare for negative x.','1,045 er for lite til å gi vekst.','Modellen kan brukes, fordi den er laget med regresjon.'],'En modell gjelder best i området dataene kommer fra. Om 50 år gir modellen 620 · 1,045<sup>600</sup>, som er et helt urealistisk tall.');
+ return mc('Høyden til et barn kan beskrives med h(x) = 6x + 50 cm, der x er alderen i år. Hva er det største problemet med modellen?','Barn slutter å vokse, så modellen gjelder bare de første årene.',['Stigningstallet burde vært negativt.','Modellen burde vært omvendt proporsjonal.','Det er ikke noe problem, modellen gjelder hele livet.'],'Med x = 40 gir modellen 290 cm. Modellen passer bare i en begrenset periode, og det må du alltid vurdere.');}
+],
+frekvens:[
+()=>{const vs=[0,1,2,3,4],f=vs.map(()=>R(1,8)),N=f.reduce((a,b)=>a+b),v=R(0,3),rel=Math.random()<.5,cum=f.slice(0,v+1).reduce((a,b)=>a+b);
+ const t=table(['Antall søsken','Frekvens'],vs.map((x,i)=>[x,f[i]]));
+ if(rel)return num(`Tabellen viser antall søsken for elevene i en klasse. Hva er den relative frekvensen for ${v} søsken? Svar med desimaltall og to desimaler.${t}`,f[v]/N,0.0051,'',`Det er ${N} elever i alt. Relativ frekvens = ${f[v]} / ${N} ≈ <b>${nf(f[v]/N,2)}</b>.`);
+ return num(`Tabellen viser antall søsken for elevene i en klasse. Hva er den kumulative frekvensen for ${v} søsken?${t}`,cum,0,'',`Kumulativ frekvens er alle med ${v} søsken eller færre: ${f.slice(0,v+1).join(' + ')} = <b>${cum}</b>.`);},
+()=>{const d=Array.from({length:15},()=>R(0,5)),t=R(1,3),c=d.filter(x=>x<=t).length,fr=[0,1,2,3,4,5].map(v=>d.filter(x=>x===v).length);
+ return num(`15 elever ble spurt hvor mange kjæledyr de har: ${d.join(', ')}. Lag en frekvenstabell. Hvor mange elever har ${t} kjæledyr eller færre?`,c,0,'elever',`Frekvenstabell: ${fr.map((f,i)=>i+': '+f).join(', ')}. Legg sammen frekvensene fra 0 til ${t}: <b>${c}</b>.`);},
+()=>{const f=[0,1,2,3].map(()=>R(2,12)),N=f.reduce((a,b)=>a+b),mid=[5,15,25,35],m=f.reduce((a,x,i)=>a+x*mid[i],0)/N;
+ return num(`Tabellen viser hvor mange minutter elevene brukte på lekser. Finn gjennomsnittet ved hjelp av klassemidtpunkt. Rund av til én desimal.${table(['Minutter','Frekvens'],[['[0, 10⟩',f[0]],['[10, 20⟩',f[1]],['[20, 30⟩',f[2]],['[30, 40⟩',f[3]]])}`,m,0.051,'min',`Klassemidtpunkt: 5, 15, 25 og 35. Gang med frekvensen og legg sammen: ${f.map((x,i)=>mid[i]+' · '+x).join(' + ')} = ${nf(m*N)}. Del på ${N}: <b>${nf(m,1)} minutter</b>. Vi antar at verdiene er jevnt fordelt i hver klasse.`);},
+()=>{let f,N,cum;do{f=[0,1,2,3].map(()=>R(2,14));N=f.reduce((a,b)=>a+b);cum=f.map((x,i)=>f.slice(0,i+1).reduce((a,b)=>a+b));}while(cum.indexOf(N/2)>=0);
+ const L=['[0, 20⟩','[20, 40⟩','[40, 60⟩','[60, 80⟩'],ci=cum.findIndex(c=>c>N/2);
+ return mc(`Tabellen viser alderen til ${N} medlemmer i en klubb. I hvilken klasse ligger medianen?${table(['Alder','Frekvens'],L.map((l,i)=>[l,f[i]]))}`,L[ci],L.filter((_,i)=>i!==ci),`Medianen er det midterste medlemmet (nr. ${N%2?(N+1)/2:N/2+' og '+(N/2+1)}). Kumulativ frekvens: ${cum.join(', ')}. Den første klassen der kumulativ frekvens passerer ${nf(N/2)} er <b>${L[ci]}</b>.`);},
+()=>{const W=[[0,20],[20,30],[30,40],[40,70]],d=W.map(()=>P([0.5,1,1.5,2,2.5,3])),fq=W.map((w,i)=>d[i]*(w[1]-w[0])),k=P([0,3]),mx=3.5,sx=x=>40+x*4.2,sy=y=>150-y*36;
+ let bars=W.map((w,i)=>`<rect x="${sx(w[0])}" y="${sy(d[i])}" width="${sx(w[1])-sx(w[0])}" height="${150-sy(d[i])}" class="hb"/>`).join('');
+ let ticks=[0,0.5,1,1.5,2,2.5,3,3.5].map(t=>`<text x="34" y="${sy(t)+4}" class="lab" text-anchor="end">${nf(t)}</text><path d="M37 ${sy(t)} H40" class="ax"/>`).join('')+[0,10,20,30,40,50,60,70].map(t=>`<text x="${sx(t)}" y="166" class="lab" text-anchor="middle">${t}</text>`).join('');
+ const svg=`<svg class="fig" viewBox="0 0 350 196" width="350" height="196" role="img" aria-label="Histogram"><path d="M40 20 V150 H340" class="ax"/>${bars}${ticks}<text x="190" y="188" class="lab" text-anchor="middle">Minutter</text><text x="8" y="12" class="lab">Frekvens per minutt</text></svg>`;
+ return num(`Histogrammet viser hvor lang tid elever brukte på å komme seg til skolen. Hvor mange elever brukte mellom ${W[k][0]} og ${W[k][1]} minutter?<div class="tw">${svg}</div>`,fq[k],0,'elever',`I et histogram er arealet av søylen lik frekvensen. Høyden er ${nf(d[k])} og bredden er ${W[k][1]-W[k][0]}, så frekvensen er ${nf(d[k])} · ${W[k][1]-W[k][0]} = <b>${fq[k]} elever</b>.`);}
+],
+monster:[
+()=>{const a=R(0,3),b=R(2,4),figs=[1,2,3].map(n=>({rows:b,cols:n,extra:a}));
+ return mc(`Se på figurene. Hvordan vokser mønsteret?${dotsSVG(figs)}`,`For hver ny figur kommer det ${b} nye sirkler.`,[`For hver ny figur kommer det ${b+1} nye sirkler.`,`For hver ny figur kommer det ${b-1} nye sirkler.`,'Antall sirkler dobles for hver ny figur.',`For hver ny figur kommer det ${b+a} nye sirkler.`],`Figurene har ${[1,2,3].map(n=>b*n+a).join(', ')} sirkler. Forskjellen er ${b} hver gang, altså én ny kolonne med ${b} sirkler.`);},
+()=>{const quad=Math.random()<.4;
+ if(quad){const c=R(1,3),n=P([10,12,20]),figs=[1,2,3].map(k=>({rows:k,cols:k,extra:c}));return num(`Se på figurene. Hvor mange sirkler er det i figur ${n}?${dotsSVG(figs)}`,n*n+c,0,'',`Figur n er et kvadrat med n · n sirkler pluss ${c} ekstra: F(n) = n${ex(2)} + ${c}. F(${n}) = ${n*n} + ${c} = <b>${n*n+c}</b>.`);}
+ const a=R(0,3),b=R(2,4),n=P([10,15,20]),figs=[1,2,3].map(k=>({rows:b,cols:k,extra:a}));
+ return num(`Se på figurene. Hvor mange sirkler er det i figur ${n}?${dotsSVG(figs)}`,b*n+a,0,'',`Antallet øker med ${b} for hver figur, og det er ${a} sirkler i tillegg. F(n) = ${b}n${a?' + '+a:''}, så F(${n}) = ${b} · ${n}${a?' + '+a:''} = <b>${b*n+a}</b>.`);},
+()=>{const a=R(1,3),b=R(2,4),figs=[1,2,3].map(n=>({rows:b,cols:n,extra:a})),corr=fF(b,a),val=(m,c)=>[1,2,3].map(n=>m*n+c).join();
+ const cand=[[b+a,0],[a,b],[b+1,a-1],[b,a+b],[b+1,a],[b,a+1]].filter(([m,c])=>val(m,c)!==val(b,a));
+ return mc(`Hvilken formel gir antall sirkler i figur n?${dotsSVG(figs)}`,corr,cand.map(([m,c])=>fF(m,c)),`Antallet øker med ${b} for hver figur, så formelen starter med ${b}n. Figur 1 har ${b+a} sirkler, og ${b} · 1 = ${b}, så vi må legge til ${a}. <b>${corr}</b>.`);},
+()=>{const a=R(0,3),b=R(2,4),figs=[1,2,3].map(n=>({rows:b,cols:n,extra:a})),ok=Math.random()<.5,[m,c]=ok?[b,a]:P([[b,a+1],[b+1,a-1],[b-1,a+2]]),vals=[1,2,3].map(n=>m*n+c),real=[1,2,3].map(n=>b*n+a);
+ return mc(`Ola mener at antall sirkler i figur n er ${fF(m,c)}. Stemmer det?${dotsSVG(figs)}`,ok?'Ja, formelen stemmer for figurene.':'Nei, formelen stemmer ikke for figurene.',[ok?'Nei, formelen stemmer ikke for figurene.':'Ja, formelen stemmer for figurene.'],`Sett inn n = 1, 2 og 3: Olas formel gir ${vals.join(', ')}. Figurene har ${real.join(', ')} sirkler. ${ok?'Det stemmer.':'Det stemmer ikke.'} Sjekk alltid formelen mot minst to figurer.`);},
+()=>{const sq=(x,y,c)=>`<rect x="${x}" y="${y}" width="14" height="14" class="${c}"/>`;let X=8,parts=[];
+ [1,2,3].forEach(n=>{for(let i=0;i<n;i++){parts.push(sq(X+16+i*16,8,'sw'));parts.push(sq(X+16+i*16,40,'sw'));parts.push(sq(X+16+i*16,24,'sg'));}parts.push(sq(X,24,'sw'));parts.push(sq(X+16+n*16,24,'sw'));parts.push(`<text x="${X}" y="70" class="lab">Figur ${n}</text>`);X+=(n+2)*16+22;});
+ const svg=`<svg class="fig" viewBox="0 0 ${X} 76" width="${Math.round(X*1.5)}" height="114" role="img" aria-label="Figur 1 til 3 med hvite og grønne kvadrater">${parts.join('')}</svg>`,tot=Math.random()<.5;
+ return mc(`Figurene er laget av hvite og grønne kvadrater. Hvilken formel gir ${tot?'det totale antallet kvadrater':'antall hvite kvadrater'} i figur n?${svg}`,tot?'3n + 2':'2n + 2',tot?['3n','2n + 2','3n + 4']:['2n','n + 2','2n + 4'],`Figur n har n grønne kvadrater, n hvite over, n hvite under og 2 hvite på endene. Hvite: n + n + 2 = 2n + 2. Totalt: 2n + 2 + n = 3n + 2. Svar: <b>${tot?'3n + 2':'2n + 2'}</b>.`);}
+],
+present:[
+()=>{const [s,c]=P([['Du vil vise hvor stor andel av elevene som velger hver av fem idretter. Til sammen blir det 100 %.','Sektordiagram'],['Du vil vise hvordan antall lærlinger har endret seg fra år til år fra 2015 til 2024.','Linjediagram'],['Du vil sammenligne hvor mange timer menn og kvinner brukte på husarbeid i 1970, 1990 og 2010.','Stolpediagram (gjerne gruppert)']]),O=['Sektordiagram','Linjediagram','Stolpediagram (gjerne gruppert)','Histogram'];
+ return mc(`${s} Hvilket diagram passer best?`,c,O.filter(o=>o!==c),'Sektordiagram passer når delene utgjør en helhet. Linjediagram passer for utvikling over tid. Stolpediagram passer for å sammenligne kategorier. Histogram brukes for grupperte data i klasser.');},
+()=>{const v=[R(41,43),R(44,46),R(47,49)],sx=i=>60+i*80,sy=y=>150-(y-40)*12;
+ const svg=`<svg class="fig" viewBox="0 0 300 180" width="300" height="180" role="img" aria-label="Stolpediagram"><path d="M40 10 V150 H290" class="ax"/>${v.map((y,i)=>`<rect x="${sx(i)}" y="${sy(y)}" width="50" height="${150-sy(y)}" class="hb"/><text x="${sx(i)+25}" y="166" class="lab" text-anchor="middle">${2022+i}</text>`).join('')}${[40,42,44,46,48,50].map(t=>`<text x="34" y="${sy(t)+4}" class="lab" text-anchor="end">${t}</text>`).join('')}</svg>`;
+ return mc(`Diagrammet skal vise antall deltakere på et kurs tre år på rad. Hva er det største problemet med diagrammet?<div class="tw">${svg}</div>`,'Andreaksen starter på 40, så forskjellene ser mye større ut enn de er.',['Søylene burde hatt ulike farger.','Det burde vært et sektordiagram.','Tallene er for store til et stolpediagram.'],`Antallet er ${v.join(', ')} – forskjellene er små, men søylene ser veldig ulike ut. Et ryddig diagram har tittel, navn og enhet på aksene, og søyler bør starte på 0. Her mangler også tittel og aksenavn.`);},
+()=>{const g=P(['Oslo','Rogaland','Vestland','Nordland']),v1=R(200,900),r=R(-30,60)/100,v2=Math.round(v1*(1+r)),p=(v2-v1)/v1*100;
+ return num(`I ${g} var det ${v1} lærlinger i et fag i 2020 og ${v2} i 2024. Hvor mange prosent endret antallet seg? Rund av til én desimal. Bruk minus hvis det er nedgang.`,p,0.051,'%',`Endring: ${v2} − ${v1} = ${v2-v1}. Prosentvis endring: ${v2-v1} / ${v1} · 100 ≈ <b>${nf(p,1)} %</b>.`);},
+()=>{const A1=R(100,200),A2=A1+R(60,100),B1=R(800,1200),B2=B1+R(110,200),pa=(A2-A1)/A1*100,pb=(B2-B1)/B1*100;
+ return mc(`Tabellen viser antall lærlinger i to kommuner. Hvilket funn stemmer?${table(['Kommune','2018','2022'],[['Lillevik',A1,A2],['Storby',B1,B2]])}`,'Lillevik hadde størst prosentvis økning, men Storby hadde størst økning i antall.',['Storby hadde størst prosentvis økning.','Lillevik hadde størst økning i antall.','Begge kommunene hadde like stor prosentvis økning.'],`Lillevik: +${A2-A1} lærlinger, ${nf(pa,1)} %. Storby: +${B2-B1} lærlinger, ${nf(pb,1)} %. Et godt funn sier hva tallene viser, og skiller mellom endring i antall og prosentvis endring.`);}
+],
+python:[
+()=>{const S=P([20000,10000,50000]),r=P([1.05,1.04,1.068]),T=Math.round(S*P([1.5,2]));
+ return mc(`Hva finner dette programmet ut?${pre(`belop = ${S}\nar = 0\nwhile belop < ${T}:\n    belop = belop * ${r}\n    ar = ar + 1\nprint(ar)`)}`,`Hvor mange år det tar før beløpet er ${nf(T)} kr eller mer.`,[`Hvor mye som står på kontoen etter ${nf(T)} år.`,'Hvor mange prosent beløpet øker med per år.','Hvor mye beløpet er etter ett år.'],`Løkka kjører så lenge beløpet er under ${nf(T)}. Hver runde ganges beløpet med ${nf(r,3)} (${nf((r-1)*100,1)} % rente), og ar øker med 1. Til slutt skrives antall år ut.`);},
+()=>{const S=P([200,160,500]),f=P([0.975,0.95,0.9]),T=Math.round(S*P([0.5,0.7]));let u=S,n=0;while(u>T){u*=f;n++;}
+ return num(`Hva skrives ut når programmet kjøres?${pre(`utslipp = ${S}\nar = 0\nwhile utslipp > ${T}:\n    utslipp = utslipp * ${f}\n    ar = ar + 1\nprint(ar)`)}`,n,0,'',`Programmet ganger utslippet med ${nf(f,3)} (${nf((1-f)*100,1)} % nedgang) til det er ${nf(T)} eller mindre, og teller årene. Det skjer etter <b>${n} år</b>, så ${n} skrives ut. Du kan sjekke med kalkulator eller ved å kjøre programmet.`);},
+()=>{const p=P([500,800,1200]),f=P([0.9,0.8,1.1]),k=R(2,4),a=p*Math.pow(f,k);
+ return num(`Hvilket tall skrives ut?${pre(`pris = ${p}\nfor i in range(${k}):\n    pris = pris * ${f}\nprint(pris)`)}`,a,0.006,'',`range(${k}) gjør at løkka kjører ${k} ganger. ${p} · ${nf(f)}${ex(k)} = <b>${nf(a,2)}</b>.`);},
+()=>{const t=Array.from({length:5},()=>R(1,12)),mean=Math.random()<.6,s=t.reduce((a,b)=>a+b);
+ return num(`Hvilket tall skrives ut?${pre(`tall = [${t.join(', ')}]\nprint(${mean?'sum(tall) / len(tall)':'sum(tall) - len(tall)'})`)}`,mean?s/5:s-5,0.001,'',`sum(tall) = ${s} og len(tall) = 5 (antall tall i lista). ${mean?`${s} / 5 = <b>${nf(s/5,2)}</b> – altså gjennomsnittet.`:`${s} − 5 = <b>${s-5}</b>.`}`);},
+()=>{const code=pre(`1  utslipp = 200\n2  ar = 0\n3  while utslipp > 100:\n4      utslipp = utslipp * 0.95\n5      ar = ar + 1\n6  print(ar)`);
+ if(Math.random()<.5)return mc(`Programmet finner ut når utslippet er halvert. Hva må du endre for å finne ut når utslippet er under 50 tonn?${code}`,'Linje 3: endre 100 til 50.',['Linje 1: endre 200 til 50.','Linje 4: endre 0.95 til 0.50.','Linje 6: skriv print(50).'],'Betingelsen i while-løkka bestemmer når programmet stopper. Løkka skal fortsette så lenge utslippet er over 50.');
+ return mc(`Hva må du endre hvis utslippet i stedet skal reduseres med 8 % per år?${code}`,'Linje 4: endre 0.95 til 0.92.',['Linje 4: endre 0.95 til 0.08.','Linje 4: endre 0.95 til 1.08.','Linje 3: endre 100 til 92.'],'En nedgang på 8 % gir vekstfaktor 1 − 0,08 = 0,92. I Python skrives desimaltall med punktum: 0.92.');}
+]};
+const B=GBASE;
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b];}return a||1;}
+function fr(a,b){if(b<0){a=-a;b=-b;}const g=gcd(a,b);a/=g;b/=g;return b===1?nf(a):(a<0?'−':'')+Math.abs(a)+'/'+b;}
+function C(n,k){if(k<0||k>n)return 0;let r=1;for(let i=1;i<=k;i++)r=r*(n-k+i)/i;return Math.round(r);}
+const bin=(n,p,k)=>C(n,k)*Math.pow(p,k)*Math.pow(1-p,n-k);
+const hyp=(N,M,n,k)=>C(M,k)*C(N-M,n-k)/C(N,n);
+const xp=(n)=>n===0?'':n===1?'x':`x<sup>${n<0?'−'+(-n):n}</sup>`;
+function vp(v,e){return e===0?'':e===1?v:`${v}<sup>${e<0?'−'+(-e):e}</sup>`;}
+const SVAR3=' Svar som brøk eller desimaltall med tre desimaler.';
+const GEN={
+sanns:[
+()=>{const w=R(2,5),s=R(3,7),N=w+s,both=Math.random()<.5,a=both?w*(w-1):2*w*s,b=N*(N-1);
+ return num(`I en krukke er det ${w} hvite og ${s} svarte kuler. Du trekker to kuler uten tilbakelegging. Hva er sannsynligheten for at ${both?'begge er hvite':'du får én hvit og én svart'}?${SVAR3}`,a/b,0.0006,'',both?`P = ${w}/${N} · ${w-1}/${N-1} = ${fr(a,b)} ≈ <b>${nf(a/b,3)}</b>.`:`Hvit så svart eller svart så hvit: ${w}/${N} · ${s}/${N-1} + ${s}/${N} · ${w}/${N-1} = ${fr(a,b)} ≈ <b>${nf(a/b,3)}</b>.`);},
+()=>{const w=R(2,4),s=R(3,6),N=w+s,a=s*(s-1)*(s-2),b=N*(N-1)*(N-2),v=1-a/b;
+ return num(`I en krukke er det ${w} hvite og ${s} svarte kuler. Du trekker tre kuler uten tilbakelegging. Hva er sannsynligheten for at minst én av dem er hvit?${SVAR3}`,v,0.0006,'',`Det motsatte av «minst én hvit» er «ingen hvite». P(ingen hvite) = ${s}/${N} · ${s-1}/${N-1} · ${s-2}/${N-2} = ${fr(a,b)}. P(minst én hvit) = 1 − ${fr(a,b)} = ${fr(b-a,b)} ≈ <b>${nf(v,3)}</b>.`);},
+()=>{const p=P([0.8,0.7,0.6,0.9]),c=R(0,2);if(c===0){const k=P([2,3]),v=bin(3,p,k);return num(`En skiskytter treffer ${nf(p*100)} % av skuddene, uavhengig av hverandre. Hun skyter tre skudd. Hva er sannsynligheten for nøyaktig ${k} treff?`,v,0.0006,'',`Binomisk med n = 3 og p = ${nf(p)}: P(X = ${k}) = (3 over ${k}) · ${nf(p)}${ex(k)} · ${nf(1-p)}${ex(3-k)} = ${C(3,k)} · ${nf(Math.pow(p,k),4)} · ${nf(Math.pow(1-p,3-k),4)} = <b>${nf(v,4)}</b>.`);}
+ if(c===1){const v=bin(3,p,0)+bin(3,p,1);return num(`En skiskytter treffer ${nf(p*100)} % av skuddene. Hun skyter tre skudd. Hva er sannsynligheten for høyst ett treff?`,v,0.0006,'',`P(X ≤ 1) = P(X = 0) + P(X = 1) = ${nf(1-p)}${ex(3)} + 3 · ${nf(p)} · ${nf(1-p)}${ex(2)} = ${nf(bin(3,p,0),4)} + ${nf(bin(3,p,1),4)} = <b>${nf(v,4)}</b>.`);}
+ const v=p*p;return num(`En skiskytter treffer ${nf(p*100)} % av skuddene, uavhengig av hverandre. Hva er sannsynligheten for at hun treffer de to første skuddene?`,v,0.0006,'',`${nf(p)} · ${nf(p)} = <b>${nf(v,4)}</b>.`);},
+()=>{const [n,p]=P([[12,0.74],[20,0.45],[30,0.3],[15,0.6]]),k=Math.round(n*p)+P([-1,0,1,2]),v=Array.from({length:n-k+1},(_,i)=>bin(n,p,k+i)).reduce((a,b)=>a+b);
+ return num(`${nf(p*100)} % av dem som går opp til en prøve, består. ${n} personer går opp. Bruk digitalt verktøy til å finne sannsynligheten for at minst ${k} består. Rund av til tre desimaler.`,v,0.0006,'',`X er binomisk fordelt med n = ${n} og p = ${nf(p)}. I GeoGebras sannsynlighetskalkulator: P(X ≥ ${k}) ≈ <b>${nf(v,3)}</b>. Forutsetninger: hvert forsøk har to utfall, og sannsynligheten er lik og uavhengig fra person til person.`);},
+()=>{const [N,M,n]=P([[80,14,10],[60,12,8],[50,10,10]]),k=n-2,v=[k,k+1,k+2].map(j=>hyp(N,N-M,n,j)).reduce((a,b)=>a+b);
+ return num(`Av ${N} søkere er ${M} under 16 år. ${n} søkere trekkes tilfeldig ut til intervju. Hva er sannsynligheten for at minst ${k} av dem er 16 år eller eldre? Bruk digitalt verktøy, og rund av til tre desimaler.`,v,0.0006,'',`Trekking uten tilbakelegging fra en liten gruppe gir hypergeometrisk fordeling: populasjon ${N}, ${N-M} «eldre», utvalg ${n}. P(X ≥ ${k}) = P(X = ${k}) + P(X = ${k+1}) + P(X = ${k+2}) ≈ <b>${nf(v,3)}</b>.`);},
+()=>{const p=P([0.01,0.02,0.05]),s=P([0.99,0.95]),t=P([0.98,0.95,0.99]),v=p*s/(p*s+(1-p)*(1-t));
+ return num(`${nf(p*100)} % av befolkningen er smittet. En test gir positivt svar for ${nf(s*100)} % av de smittede og negativt svar for ${nf(t*100)} % av de friske. En tilfeldig person tester positivt. Hva er sannsynligheten for at personen er smittet? Rund av til tre desimaler.`,v,0.0006,'',`Tenk deg 10 000 personer: ${nf(10000*p)} smittede gir ${nf(10000*p*s)} positive. ${nf(10000*(1-p))} friske gir ${nf(10000*(1-p)*(1-t))} falske positive. P(smittet | positiv) = ${nf(10000*p*s)} / (${nf(10000*p*s)} + ${nf(10000*(1-p)*(1-t))}) ≈ <b>${nf(v,3)}</b>.`);},
+()=>{const c=R(0,2);if(c===0)return num(`Du kaster tre terninger. Hva er sannsynligheten for at alle viser ulikt antall øyne?${SVAR3}`,120/216,0.0006,'',`Gunstige: 6 · 5 · 4 = 120. Mulige: 6³ = 216. P = 120/216 = 5/9 ≈ <b>0,556</b>.`);
+ if(c===1)return num(`Du kaster tre terninger. Hva er sannsynligheten for at nøyaktig to av dem viser det samme?${SVAR3}`,90/216,0.0006,'',`Velg hvilke to som er like (3 måter), hvilket tall de viser (6) og et annet tall på den tredje (5): 3 · 6 · 5 = 90. P = 90/216 = 5/12 ≈ <b>0,417</b>.`);
+ const S=R(4,10),n=[1,2,3,4,5,6].reduce((a,i)=>a+[1,2,3,4,5,6].filter(j=>i+j===S).length,0);return num(`Du kaster to terninger. Hva er sannsynligheten for at summen blir ${S}?${SVAR3}`,n/36,0.0006,'',`Det er ${n} kombinasjoner som gir sum ${S}, av 36 mulige. P = ${fr(n,36)} ≈ <b>${nf(n/36,3)}</b>.`);}
+],
+grense:[
+()=>{const c=R(0,2),a=R(1,5);if(c===0)return num(`Bestem grenseverdien når x → ${a}: (x² − ${a*a}) / (x − ${a})`,2*a,1e-9,'',`Konjugatsetningen: x² − ${a*a} = (x − ${a})(x + ${a}). Forkort: grenseverdien er ${a} + ${a} = <b>${2*a}</b>.`);
+ if(c===1){const b=R(1,5),s=b-a;return num(`Bestem grenseverdien når x → ${a}: (x − ${a}) / (${poly([[1,'x<sup>2</sup>'],[s,'x'],[-a*b,'']])}). Svar som brøk eller desimaltall.`,1/(a+b),1e-4,'',`Nevneren faktoriseres: (x − ${a})(x + ${b}). Forkort (x − ${a}): 1/(x + ${b}) → 1/${a+b} = <b>${fr(1,a+b)}</b>.`);}
+ return num(`Bestem grenseverdien når x → ${a}: (x³ − ${a*a*a}) / (x² − ${a*a}). Svar som brøk eller desimaltall.`,3*a/2,1e-4,'',`x³ − ${a*a*a} = (x − ${a})(x² + ${a}x + ${a*a}) og x² − ${a*a} = (x − ${a})(x + ${a}). Forkort og sett inn x = ${a}: ${3*a*a} / ${2*a} = <b>${fr(3*a,2)}</b>.`);},
+()=>{const c=R(0,3),p=R(1,6),q=R(-9,9),r=P([-4,-3,-2,2,3,4,6]),s=R(-9,9);
+ const O=['∞','−∞','0',fr(p,r)];if(c===0)return mc(`Bestem grenseverdien når x → ∞: (${poly([[p,'x<sup>2</sup>'],[q,'']])}) / (${poly([[r,'x<sup>2</sup>'],[s,'']])})`,fr(p,r),O.filter(o=>o!==fr(p,r)).concat(['Finnes ikke']),`Del på x² i teller og nevner. Leddene med 1/x² går mot 0, så grenseverdien er ${p} / ${nf(r)} = <b>${fr(p,r)}</b>.`);
+ if(c===1)return mc(`Bestem grenseverdien når x → ∞: (${poly([[p,'x'],[q,'']])}) / (${poly([[r,'x<sup>2</sup>'],[s,'']])})`,'0',O.filter(o=>o!=='0').concat(['Finnes ikke']),`Nevneren har høyest grad, så brøken går mot <b>0</b>.`);
+ if(c===2){const lim=p/r>0?'∞':'−∞';return mc(`Bestem grenseverdien når x → ∞: (${poly([[p,'x<sup>2</sup>'],[q,'x']])}) / (${poly([[r,'x'],[s,'']])})`,lim,O.filter(o=>o!==lim).concat(['Finnes ikke']),`Telleren har høyest grad. Brøken oppfører seg som ${p}x² / (${nf(r)}x) = ${fr(p,r)} · x, som går mot <b>${lim}</b>.`);}
+ const k=R(1,3);return mc(`Bestem grenseverdien når x → ∞: e<sup>−${k===1?'':k}x + 1</sup>`,'0',['∞','−∞','e','1'],`Eksponenten går mot −∞, og e opphøyd i et stort negativt tall går mot <b>0</b>.`);},
+()=>{const a=R(1,5),k=R(1,3),d=R(-4,6),c=a*k+d-k*k;
+ return num(`f(x) = x² ${c<0?'−':'+'} ${Math.abs(c)} når x < ${k}, og f(x) = ax ${d<0?'−':'+'} ${Math.abs(d)} når x ≥ ${k}. Bestem a slik at f blir kontinuerlig.`,a,1e-9,'',`Begge delene må gi samme verdi i x = ${k}: ${k*k} ${c<0?'−':'+'} ${Math.abs(c)} = ${k}a ${d<0?'−':'+'} ${Math.abs(d)}. ${k*k+c} = ${k}a + ${d}, så a = <b>${a}</b>.`);},
+()=>{const m=R(1,5),same=Math.random()<.5,n=same?m:m+P([-2,-1,1,2]);
+ return mc(`f(x) = x + ${m} når x < 0, og f(x) = ${n} − x² når x ≥ 0. Er f kontinuerlig i x = 0?`,same?'Ja, fordi venstre og høyre grenseverdi begge er '+m+' og lik f(0).':`Nei, fordi venstre grenseverdi er ${m} og høyre er ${n}.`,[same?`Nei, fordi venstre grenseverdi er ${m} og høyre er ${n+1}.`:'Ja, fordi venstre og høyre grenseverdi begge er '+m+' og lik f(0).','Ja, alle funksjoner med formel er kontinuerlige.','Nei, en funksjon med delt forskrift kan aldri være kontinuerlig.'],`Fra venstre: x + ${m} → ${m}. Fra høyre: ${n} − x² → ${n}. f er kontinuerlig i 0 bare hvis disse er like (og lik f(0) = ${n}).`);},
+()=>{const a=R(1,6);if(Math.random()<.6)return num(`Bestem grenseverdien når h → 0: ((${a} + h)² − ${a}²) / h`,2*a,1e-9,'',`(${a} + h)² − ${a*a} = ${2*a}h + h². Del på h: ${2*a} + h → <b>${2*a}</b>. Dette er f′(${a}) for f(x) = x².`);
+ return num(`Bestem grenseverdien når h → 0: ((${a} + h)³ − ${a}³) / h`,3*a*a,1e-9,'',`Dette er definisjonen av f′(${a}) for f(x) = x³. f′(x) = 3x², så svaret er 3 · ${a}² = <b>${3*a*a}</b>.`);},
+()=>{const a=R(2,5);if(Math.random()<.5)return num(`Bestem grenseverdien når x → ${a*a}: (√x − ${a}) / (x − ${a*a}). Svar som brøk eller desimaltall.`,1/(2*a),1e-4,'',`x − ${a*a} = (√x − ${a})(√x + ${a}) (konjugatsetningen). Forkort: 1/(√x + ${a}) → 1/${2*a} = <b>${fr(1,2*a)}</b>.`);
+ return num(`Bestem grenseverdien når x → ${a*a}: (x − ${a*a}) / (√x − ${a})`,2*a,1e-9,'',`x − ${a*a} = (√x − ${a})(√x + ${a}). Forkort: √x + ${a} → ${a} + ${a} = <b>${2*a}</b>.`);}
+],
+log:[
+()=>{const [e,a,s]=P([['lg 1000',3,'10³ = 1000'],['lg 0,01',-2,'10<sup>−2</sup> = 0,01'],['ln e<sup>5</sup>',5,'ln og e opphever hverandre'],['log<sub>2</sub> 32',5,'2⁵ = 32'],['e<sup>3 ln 2</sup>',8,'e<sup>3 ln 2</sup> = (e<sup>ln 2</sup>)³ = 2³'],['10<sup>lg 7</sup>',7,'10 og lg opphever hverandre'],['lg √10',0.5,'√10 = 10<sup>1/2</sup>'],['log<sub>3</sub> (1/9)',-2,'3<sup>−2</sup> = 1/9'],['2 ln e<sup>3</sup>',6,'ln e³ = 3, og 2 · 3 = 6']]);
+ return num(`Regn ut uten hjelpemidler: ${e}`,a,1e-9,'',`${s}. Svar: <b>${nf(a)}</b>.`);},
+()=>{const [e,a,s]=P([['lg 4 + lg 25',2,'lg(4 · 25) = lg 100'],['lg 200 − lg 2',2,'lg(200/2) = lg 100'],['2 lg 5 + lg 4',2,'lg 25 + lg 4 = lg 100'],['lg 8 / lg 2',3,'lg 8 = lg 2³ = 3 lg 2'],['ln 12 − ln 3 − 2 ln 2',0,'ln(12 / (3 · 4)) = ln 1'],['3 lg 10 − lg 1000',0,'3 − 3'],['ln(e<sup>2</sup>) + ln(1/e)',1,'2 + (−1)'],['lg 0,5 + lg 20',1,'lg(0,5 · 20) = lg 10']]);
+ return num(`Regn ut uten hjelpemidler: ${e}`,a,1e-9,'',`${s}. Svar: <b>${a}</b>.`);},
+()=>{const b=P([2,3,5]),a=P([1,2,3]),c=R(-2,3),k=R(1,4),d=P([1,3,5,0]),N=Math.pow(b,k)-d,x=(k-c)/a,E=poly([[a,'x'],[c,'']]);
+ return num(`Løs likningen ${b}<sup>${E}</sup>${d?' − '+d:''} = ${N}. Svar som brøk eller desimaltall.`,x,1e-4,'',`${d?`Legg til ${d}: `:''}${b}<sup>${E}</sup> = ${Math.pow(b,k)} = ${b}${ex(k)}. Da må eksponentene være like: ${E} = ${k}, så x = <b>${fr(k-c,a)}</b>.`);},
+()=>{if(Math.random()<.5){const r=R(2,8),a=R(1,5),N=r*(r+a);return num(`Løs likningen lg(x + ${a}) + lg x = lg ${N}.`,r,1e-9,'',`lg((x + ${a}) · x) = lg ${N}, så x² + ${a}x − ${N} = 0. Løsningene er x = ${r} og x = ${-(r+a)}. Logaritmen er bare definert for positive tall, så x = ${-(r+a)} forkastes. Svar: <b>x = ${r}</b>.`);}
+ const [a,N,r]=P([[3,10,5],[9,10,10],[21,100,25],[15,100,20]]);return num(`Løs likningen lg(x − ${a}) + lg x = ${N===10?1:2}.`,r,1e-9,'',`lg(x(x − ${a})) = ${N===10?1:2} gir x(x − ${a}) = ${N}, altså x² − ${a}x − ${N} = 0. Løsningene er x = ${r} og x = ${a-r}. x − ${a} må være positiv, så bare <b>x = ${r}</b> gjelder.`);},
+()=>{if(Math.random()<.5){let p,q;do{p=R(-3,4);q=R(-3,4);}while(p===q);const t=(u)=>nf(Math.pow(10,u),6),s=(u,v)=>`x = ${t(Math.min(u,v))} eller x = ${t(Math.max(u,v))}`;
+ return mc(`Løs likningen ${poly([[1,'(lg x)<sup>2</sup>'],[-(p+q),'lg x'],[p*q,'']])} = 0.`,s(p,q),[s(-p,-q),`x = ${p} eller x = ${q}`,s(p+1,q+1)],`Sett u = lg x: ${poly([[1,'u<sup>2</sup>'],[-(p+q),'u'],[p*q,'']])} = 0 gir u = ${p} eller u = ${q}. Da er x = 10${ex(p)} eller x = 10${ex(q)}, altså <b>${s(p,q)}</b>.`);}
+ const p=R(2,5),q=-R(1,3);return mc(`Løs likningen ${poly([[1,'e<sup>2x</sup>'],[-(p+q),'e<sup>x</sup>'],[p*q,'']])} = 0.`,`x = ln ${p}`,[`x = ln ${p} eller x = ln(${q})`,`x = ${p} eller x = ${q}`,`x = ln ${p} eller x = 0`],`Sett u = eˣ: ${poly([[1,'u<sup>2</sup>'],[-(p+q),'u'],[p*q,'']])} = 0 gir u = ${p} eller u = ${q}. eˣ er alltid positiv, så eˣ = ${q} har ingen løsning. Svaret er <b>x = ln ${p}</b>.`);},
+()=>{const c=R(0,2);if(c===0){const d=P([10,20,30]);return num(`Lydstyrken i desibel er L = 120 + 10 · lg I, der I er lydintensiteten. Hvor mange ganger større er intensiteten når lydstyrken øker med ${d} dB?`,Math.pow(10,d/10),1e-6,'ganger',`ΔL = 10 · lg(I₂/I₁) = ${d}, så lg(I₂/I₁) = ${d/10} og I₂/I₁ = 10${ex(d/10)} = <b>${nf(Math.pow(10,d/10))}</b>.`);}
+ if(c===1){const d=P([2,3,5]),v=(Math.pow(10,d/10)-1)*100;return num(`Lydstyrken i desibel er L = 120 + 10 · lg I. Hvor mange prosent øker intensiteten når lydstyrken øker med ${d} dB? Rund av til én desimal.`,v,0.051,'%',`I₂/I₁ = 10<sup>${d}/10</sup> ≈ ${nf(Math.pow(10,d/10),3)}, altså en økning på <b>${nf(v,1)} %</b>.`);}
+ const k=P([2,4,5,6]);return num(`Lydstyrken i desibel er L = 120 + 10 · lg I. Hva er lydstyrken når I = 10<sup>−${k}</sup>?`,120-10*k,1e-9,'dB',`lg 10<sup>−${k}</sup> = −${k}. L = 120 + 10 · (−${k}) = <b>${120-10*k} dB</b>.`);}
+],
+okon:[
+()=>{const a=P([0.1,0.2,0.05]),b=P([40,100,140]),c=P([7000,9000]),x0=P([100,200,500]),v=2*a*x0+b;
+ return num(`Kostnaden ved å produsere x enheter er K(x) = ${nf(a)}x² + ${b}x + ${nf(c)}. Regn ut K′(${x0}).`,v,1e-6,'',`K′(x) = ${nf(2*a)}x + ${b}. K′(${x0}) = ${nf(2*a*x0)} + ${b} = <b>${nf(v)}</b>. Det betyr at det koster omtrent ${nf(v)} kr å produsere én enhet til når produksjonen er ${x0} enheter.`);},
+()=>{const [a,c,x]=P([[0.1,9000,300],[0.2,8000,200],[0.5,12800,160],[0.1,4000,200]]),b=P([40,60,100]),Ex=a*x+b+c/x,askX=Math.random()<.5;
+ return num(`Kostnaden er K(x) = ${nf(a)}x² + ${b}x + ${nf(c)}. Enhetskostnaden er E(x) = K(x) / x. ${askX?'Hvor mange enheter gir lavest enhetskostnad?':'Hva er den laveste enhetskostnaden?'}`,askX?x:Ex,0.01,askX?'enheter':'kr',`E(x) = ${nf(a)}x + ${b} + ${nf(c)}/x. E′(x) = ${nf(a)} − ${nf(c)}/x² = 0 gir x² = ${nf(c/a)}, altså x = ${x}. E(${x}) = ${nf(a*x)} + ${b} + ${nf(c/x)} = ${nf(Ex)}. Svar: <b>${askX?x+' enheter':nf(Ex)+' kr'}</b>.`);},
+()=>{const a=P([0.05,0.1,0.02]),b=P([100,80,60]),c=P([10000,5000]),x=b/(2*a),O=b*b/(4*a)-c,askX=Math.random()<.5;
+ return num(`Overskuddet er O(x) = −${nf(a)}x² + ${b}x − ${nf(c)}. ${askX?'Hvor mange enheter gir størst overskudd?':'Hva er det største overskuddet?'}`,askX?x:O,0.01,askX?'enheter':'kr',`O′(x) = −${nf(2*a)}x + ${b} = 0 gir x = ${nf(x)}. O(${nf(x)}) = ${nf(O)}. Svar: <b>${askX?nf(x)+' enheter':nf(O)+' kr'}</b>.`);},
+()=>{const A=P([300,500,200]),k=P([0.5,1,2]),x=A/(2*k),I=A*A/(4*k);
+ return num(`Prisen per enhet når det selges x enheter er p(x) = ${A} − ${nf(k)}x. Hva er den største inntekten?`,I,0.01,'kr',`I(x) = x · p(x) = ${A}x − ${nf(k)}x². I′(x) = ${A} − ${nf(2*k)}x = 0 gir x = ${nf(x)}. I(${nf(x)}) = <b>${nf(I)} kr</b>.`);},
+()=>{const [a,c,x]=P([[0.02,12800,800],[0.1,4000,200],[0.2,8000,200],[0.05,12500,500]]),b=R(40,80),pr=a*x+b+c/x;
+ return num(`En elevbedrift har kostnadene K(x) = ${nf(a)}x² + ${b}x + ${nf(c)}. Hva er den laveste prisen per enhet de kan ta uten å gå med underskudd?`,pr,0.01,'kr',`Laveste pris uten underskudd er den laveste enhetskostnaden. E(x) = ${nf(a)}x + ${b} + ${nf(c)}/x har minimum når x = √(${nf(c)}/${nf(a)}) = ${x}. E(${x}) = <b>${nf(pr)} kr</b>.`);}
+],
+deriv:[
+()=>{const a=R(2,6),n=R(2,4),b=R(-6,6)||1,c=R(1,9);const f=poly([[a,xp(n)],[b,'x'],[c,'']]),d=poly([[a*n,xp(n-1)],[b,'']]);
+ return mc(`Deriver f(x) = ${f}.`,`f′(x) = ${d}`,[`f′(x) = ${poly([[a*n,xp(n-1)],[b,''],[c,'']])}`,`f′(x) = ${poly([[a,xp(n-1)],[b,'']])}`,`f′(x) = ${poly([[a*n,xp(n)],[b,'']])}`,`f′(x) = ${poly([[a*n,xp(n-1)],[b,'x']])}`],`Derivér ledd for ledd: (x<sup>n</sup>)′ = n·x<sup>n−1</sup>, (bx)′ = b, og konstanten ${c} blir 0. f′(x) = <b>${d}</b>.`);},
+()=>{const n=R(2,4);if(Math.random()<.5)return mc(`Deriver f(x) = ${xp(n)} · ln x.`,`f′(x) = ${n}${xp(n-1)} · ln x + ${xp(n-1)}`,[`f′(x) = ${n}${xp(n-2)||'1'}`,`f′(x) = ${n}${xp(n-1)} · ln x`,`f′(x) = ${n}${xp(n-1)} + 1/x`],`Produktregelen: (u · v)′ = u′v + uv′ med u = ${xp(n)} og v = ln x. u′ = ${n}${xp(n-1)}, v′ = 1/x. f′(x) = ${n}${xp(n-1)} · ln x + ${xp(n)} · 1/x = <b>${n}${xp(n-1)} · ln x + ${xp(n-1)}</b>.`);
+ return mc(`Deriver f(x) = ${xp(n)} · eˣ.`,`f′(x) = eˣ(${xp(n)} + ${n}${xp(n-1)})`,[`f′(x) = ${n}${xp(n-1)} · eˣ`,`f′(x) = ${xp(n)} · eˣ`,`f′(x) = ${n}${xp(n-1)} + eˣ`],`Produktregelen med u = ${xp(n)} og v = eˣ: f′(x) = ${n}${xp(n-1)} · eˣ + ${xp(n)} · eˣ = <b>eˣ(${xp(n)} + ${n}${xp(n-1)})</b>.`);},
+()=>{const k=R(2,5),m=R(1,6),c=R(0,2);if(c===0)return mc(`Deriver f(x) = e<sup>${k}x + ${m}</sup>.`,`f′(x) = ${k}e<sup>${k}x + ${m}</sup>`,[`f′(x) = e<sup>${k}x + ${m}</sup>`,`f′(x) = (${k}x + ${m})e<sup>${k}x + ${m-1}</sup>`,`f′(x) = ${k}xe<sup>${k}x + ${m}</sup>`],`Kjerneregelen: (e<sup>u</sup>)′ = u′ · e<sup>u</sup>. Her er u = ${k}x + ${m} og u′ = ${k}. f′(x) = <b>${k}e<sup>${k}x + ${m}</sup></b>.`);
+ if(c===1)return mc(`Deriver f(x) = ln(${k}x).`,'f′(x) = 1/x',[`f′(x) = ${k}/x`,`f′(x) = 1/(${k}x)`,`f′(x) = ${k}`],`Kjerneregelen: (ln u)′ = u′/u = ${k}/(${k}x) = <b>1/x</b>. Du kan også se det slik: ln(${k}x) = ln ${k} + ln x, og ln ${k} er en konstant.`);
+ return mc(`Deriver f(x) = ln(x² + ${m}).`,`f′(x) = 2x / (x² + ${m})`,[`f′(x) = 1 / (x² + ${m})`,`f′(x) = 2x · ln(x² + ${m})`,`f′(x) = 1 / (2x)`],`Kjerneregelen: (ln u)′ = u′/u med u = x² + ${m} og u′ = 2x. f′(x) = <b>2x / (x² + ${m})</b>.`);},
+()=>{const k=R(2,4),c=R(1,5),t=R(0,2);if(t===0)return mc(`Deriver f(x) = e<sup>${k}x</sup> / x.`,`f′(x) = e<sup>${k}x</sup>(${k}x − 1) / x²`,[`f′(x) = ${k}e<sup>${k}x</sup>`,`f′(x) = e<sup>${k}x</sup>(${k}x + 1) / x²`,`f′(x) = ${k}e<sup>${k}x</sup> / x²`],`Brøkregelen: (u/v)′ = (u′v − uv′)/v². u′ = ${k}e<sup>${k}x</sup>, v = x, v′ = 1. f′(x) = (${k}x · e<sup>${k}x</sup> − e<sup>${k}x</sup>) / x² = <b>e<sup>${k}x</sup>(${k}x − 1) / x²</b>.`);
+ if(t===1)return mc(`Deriver f(x) = x / (x + ${c}).`,`f′(x) = ${c} / (x + ${c})²`,[`f′(x) = 1 / (x + ${c})²`,`f′(x) = 1`,`f′(x) = (2x + ${c}) / (x + ${c})²`],`Brøkregelen: f′(x) = (1 · (x + ${c}) − x · 1) / (x + ${c})² = <b>${c} / (x + ${c})²</b>.`);
+ return mc('Deriver f(x) = ln x / x.','f′(x) = (1 − ln x) / x²',['f′(x) = (ln x − 1) / x²','f′(x) = 1 / x²','f′(x) = (1 + ln x) / x²'],'Brøkregelen: f′(x) = ((1/x) · x − ln x · 1) / x² = <b>(1 − ln x) / x²</b>.');},
+()=>{const a=P([1,2,-1]),b=R(-4,6),f=x=>a*x*x*x+b*x;if(Math.random()<.5){const p=R(0,2),q=p+R(1,3),v=(f(q)-f(p))/(q-p);return num(`f(x) = ${poly([[a,'x<sup>3</sup>'],[b,'x']])}. Finn den gjennomsnittlige vekstfarten i intervallet [${p}, ${q}].`,v,1e-6,'',`(f(${q}) − f(${p})) / (${q} − ${p}) = (${nf(f(q))} − ${nf(f(p))}) / ${q-p} = <b>${nf(v,3)}</b>.`);}
+ const x0=R(-2,3),v=3*a*x0*x0+b;return num(`f(x) = ${poly([[a,'x<sup>3</sup>'],[b,'x']])}. Finn den momentane vekstfarten når x = ${nf(x0)}.`,v,1e-6,'',`f′(x) = ${poly([[3*a,'x<sup>2</sup>'],[b,'']])}. f′(${nf(x0)}) = <b>${nf(v)}</b>.`);}
+],
+sim:[
+()=>{const S=R(5,10);return mc(`Hva regner dette programmet ut?${pre(`import random\ntreff = 0\nN = 100000\nfor i in range(N):\n    t1 = random.randint(1, 6)\n    t2 = random.randint(1, 6)\n    if t1 + t2 == ${S}:\n        treff = treff + 1\nprint(treff / N)`)}`,`En tilnærmet verdi for sannsynligheten for at summen av to terninger blir ${S}`,[`Antall ganger summen blir ${S}`,`Den eksakte sannsynligheten for at summen blir ${S}`,'Gjennomsnittlig sum av to terninger'],`Programmet kaster to terninger ${nf(100000)} ganger og teller hvor ofte summen blir ${S}. Andelen treff er en simulert (tilnærmet) sannsynlighet. Den eksakte er ${fr([1,2,3,4,5,6].reduce((a,i)=>a+[1,2,3,4,5,6].filter(j=>i+j===S).length,0),36)}.`);},
+()=>{const T=P([50,100,200,500]);let n=0,s=0;while(s<T){n++;s+=n*n;}
+ return num(`Hva skrives ut når programmet kjøres?${pre(`n = 0\ns = 0\nwhile s < ${T}:\n    n = n + 1\n    s = s + n**2\nprint(n)`)}`,n,0,'',`Programmet legger sammen 1² + 2² + 3² + … til summen er minst ${T}. Summene blir ${Array.from({length:n},(_,i)=>{let t=0;for(let j=1;j<=i+1;j++)t+=j*j;return t;}).join(', ')}. Løkka stopper når n = <b>${n}</b>.`);},
+()=>{const K=P([12,15,18,20,24]),n=[1,2,3,4,5,6].reduce((a,i)=>a+[1,2,3,4,5,6].filter(j=>i*j>=K).length,0);
+ return num(`Et program kaster to terninger mange ganger og finner andelen kast der produktet av øynene er minst ${K}. Hva er den eksakte sannsynligheten programmet nærmer seg?${SVAR3}`,n/36,0.0006,'',`Tell parene (a, b) med a · b ≥ ${K}: det er ${n} av 36. P = ${fr(n,36)} ≈ <b>${nf(n/36,3)}</b>.`);},
+()=>{return mc(`Programmet skal telle kast der summen av to terninger blir 7 eller 11. Hvilken linje må stå på den tomme plassen?${pre(`import random\ntreff = 0\nfor i in range(100000):\n    t1 = random.randint(1, 6)\n    t2 = random.randint(1, 6)\n    __________\n        treff = treff + 1\nprint(treff / 100000)`)}`,'if t1 + t2 == 7 or t1 + t2 == 11:',['if t1 + t2 == 7 and t1 + t2 == 11:','if t1 + t2 == 7 or 11:','if t1 == 7 or t2 == 11:'],'Summen kan ikke være både 7 og 11 samtidig, så det må være or. Hver betingelse må skrives helt ut: «t1 + t2 == 7 or 11» blir alltid sann i Python, fordi 11 tolkes som sant.');}
+],
+optim:[
+()=>{const c=P([3,4,9,12]);return mc(`Et rektangel har to hjørner på x-aksen og to hjørner på grafen til f(x) = ${c} − x², symmetrisk om y-aksen. Hjørnet til høyre på grafen er (x, f(x)). Hvilket uttrykk gir arealet?`,`A(x) = 2x(${c} − x²)`,[`A(x) = x(${c} − x²)`,`A(x) = 2x(${c} − x)`,`A(x) = 2x · ${c} − x²`],`Bredden er 2x (fra −x til x), og høyden er f(x) = ${c} − x². A(x) = 2x(${c} − x²).`);},
+()=>{const [c,x,A]=P([[3,1,4],[12,2,32],[27,3,108]]);return num(`Et rektangel har to hjørner på x-aksen og to hjørner på grafen til f(x) = ${c} − x², symmetrisk om y-aksen. Bruk derivasjon til å finne det største arealet rektangelet kan ha.`,A,1e-6,'',`A(x) = 2x(${c} − x²) = ${2*c}x − 2x³. A′(x) = ${2*c} − 6x² = 0 gir x² = ${c/3}, så x = ${x}. A(${x}) = 2 · ${x} · ${c-x*x} = <b>${A}</b>.`);},
+()=>{const [S,x,h,V]=P([[48,4,2,32],[108,6,3,108],[300,10,5,500]]);return num(`En kasse uten lokk har kvadratisk grunnflate. Det skal brukes ${S} dm² materiale. Hva er det største volumet kassen kan få?`,V,1e-6,'dm³',`Med side x og høyde h: x² + 4xh = ${S}, så h = (${S} − x²)/(4x). V(x) = x² · h = (${S}x − x³)/4. V′(x) = (${S} − 3x²)/4 = 0 gir x = ${x}, og h = ${h}. V = ${x}² · ${h} = <b>${V} dm³</b>.`);},
+()=>{const a=R(1,4),b=R(-3,4),m=2*a,c=b-a*a;const ln=(k,d)=>`y = ${k===1?'':nf(k)}x ${d<0?'−':'+'} ${nf(Math.abs(d))}`;
+ return mc(`Finn likningen for tangenten til f(x) = ${poly([[1,'x<sup>2</sup>'],[b,'']])} i punktet der x = ${a}.`,ln(m,c),[ln(m,a*a+b),ln(a*a,b),ln(m,c+1),ln(a,c)],`f′(x) = 2x, så stigningstallet er f′(${a}) = ${m}. Punktet er (${a}, ${a*a+b}). y − ${a*a+b} = ${m}(x − ${a}) gir <b>${ln(m,c)}</b>.`);}
+],
+komb:[
+()=>{const s=P([1,2]),l=P([2,3]),v=Math.pow(10,s)*Math.pow(26,l);return num(`Et passord består av ${s} siffer (0–9) etterfulgt av ${l} bokstaver (26 mulige). Hvor mange ulike passord finnes?`,v,0,'',`Produktregelen: ${Array(s).fill('10').concat(Array(l).fill('26')).join(' · ')} = <b>${nf(v)}</b>.`);},
+()=>{const n=R(6,12),r=R(2,5);return num(`På hvor mange måter kan vi velge ${r} elever av ${n}, når rekkefølgen ikke spiller noen rolle?`,C(n,r),0,'',`Antall kombinasjoner: (${n} over ${r}) = ${n}! / (${r}! · ${n-r}!) = <b>${nf(C(n,r))}</b>. I GeoGebra: nCr(${n}, ${r}).`);},
+()=>{const L=P([3,4]),v=Math.pow(36,L)-Math.pow(26,L);return num(`Et passord har ${L} tegn. Hvert tegn er et siffer (10 mulige) eller en bokstav (26 mulige). Hvor mange passord har minst ett siffer?`,v,0,'',`Alle passord: 36${ex(L)} = ${nf(Math.pow(36,L))}. Uten siffer: 26${ex(L)} = ${nf(Math.pow(26,L))}. Minst ett siffer: <b>${nf(v)}</b>.`);},
+()=>{const g=R(3,6),j=R(4,7),r=4,k=2,a=C(g,k)*C(j,r-k),b=C(g+j,r);return num(`I en gruppe er det ${g} gutter og ${j} jenter. ${r} personer trekkes tilfeldig ut. Hva er sannsynligheten for at nøyaktig ${k} av dem er gutter?${SVAR3}`,a/b,0.0006,'',`Gunstige: (${g} over ${k}) · (${j} over ${r-k}) = ${C(g,k)} · ${C(j,r-k)} = ${a}. Mulige: (${g+j} over ${r}) = ${b}. P = ${fr(a,b)} ≈ <b>${nf(a/b,3)}</b>.`);}
+],
+modell:[B.modell[0],B.modell[1],B.modell[2],B.modell[4],B.modell[5]],
+pastand:[
+()=>{const [p,t,s]=P([['e<sup>k · ln x</sup> = x<sup>k</sup> for alle x > 0.',true,'e<sup>k ln x</sup> = (e<sup>ln x</sup>)<sup>k</sup> = x<sup>k</sup>.'],['lg(a + b) = lg a + lg b for alle positive a og b.',false,'Moteksempel: a = b = 1 gir lg 2 ≈ 0,30 på venstre side og 0 på høyre side. Det riktige er lg(a · b) = lg a + lg b.'],['Alle tredjegradsfunksjoner har nøyaktig ett vendepunkt.',true,'f″(x) = 6ax + 2b er en lineær funksjon som skifter fortegn i nøyaktig ett punkt (når a ≠ 0).'],['Alle tredjegradsfunksjoner har et toppunkt.',false,'Moteksempel: f(x) = x³ er alltid stigende og har ingen topp- eller bunnpunkter.'],['Hvis aˣ = aʸ og a > 0, a ≠ 1, så er x = y.',true,'Funksjonen aˣ er strengt voksende eller strengt avtagende når a ≠ 1, så hver verdi treffes bare én gang.'],['Hvis f′(a) = 0, har f et ekstremalpunkt i x = a.',false,'Moteksempel: f(x) = x³ har f′(0) = 0, men ingen topp- eller bunnpunkt i x = 0.'],['ln(x²) = 2 ln x for alle x ≠ 0.',false,'For negative x er ln x ikke definert, men ln(x²) er det. Riktig er ln(x²) = 2 ln|x|.']]);
+ const q=mc(`Er påstanden sann eller usann? «${p}»`,t?'Påstanden er sann.':'Påstanden er usann.',[t?'Påstanden er usann.':'Påstanden er sann.'],s);q.opts=['Påstanden er sann.','Påstanden er usann.'];q.correct=t?0:1;return q;},
+()=>{const [p,c,w,s]=P([['Hvis f′(a) = 0, har f et topp- eller bunnpunkt i x = a.','f(x) = x³ med a = 0',['f(x) = x² med a = 0','f(x) = −x² med a = 0','f(x) = x⁴ med a = 0'],'f(x) = x³ har f′(0) = 0, men grafen stiger både før og etter x = 0. De andre funksjonene har faktisk topp- eller bunnpunkt i 0.'],['For alle positive a og b er lg(a + b) = lg a + lg b.','a = 1 og b = 1',['a = 2 og b = 2','a = 3 og b = 1,5','Det finnes ingen moteksempler.'],'a = b = 1 gir lg 2 ≈ 0,30 på venstre side og 0 på høyre. For a = b = 2 og a = 3, b = 1,5 er a + b = a · b, så der stemmer likheten tilfeldigvis.'],['Hvis f er kontinuerlig i x = 0, er f deriverbar i x = 0.','f(x) = |x|',['f(x) = x²','f(x) = 2x + 1','f(x) = eˣ'],'f(x) = |x| er kontinuerlig i 0, men grafen har en knekk der, så den deriverte finnes ikke.']]);
+ return mc(`Hvilket alternativ er et moteksempel som viser at påstanden er usann? «${p}»`,c,w,s);}
+],
+algebra:[
+()=>{const c=P([2,3]),p=R(1,2),q=P([-1,-2,1]),k=P([2,3]),r=R(1,3),s=P([-3,-2,-1,2]),E=p*k-r,F=q*k-s,co=Math.pow(c,k);
+ const term=(cc,e1,e2)=>`${cc===1?'':cc}${vp('a',e1)}${vp('b',e2)}`||'1';
+ return mc(`Skriv så enkelt som mulig: (${c}${vp('a',p)}${vp('b',q)})${ex(k)} / (${vp('a',r)}${vp('b',s)})`,term(co,E,F),[term(co,E+2,F),term(c*k,E,F),term(co,E,-F),term(co,p*k+r,q*k+s)],`(${c}${vp('a',p)}${vp('b',q)})${ex(k)} = ${co}${vp('a',p*k)}${vp('b',q*k)}. Del på ${vp('a',r)}${vp('b',s)}: trekk fra eksponentene. a: ${p*k} − (${r}) = ${E}, b: ${q*k} − (${s}) = ${F}. Svar: <b>${term(co,E,F)}</b>.`);},
+()=>{const [e,a,s]=P([['8<sup>2/3</sup>',4,'∛8 = 2, og 2² = 4'],['27<sup>−1/3</sup>',1/3,'∛27 = 3, og negativ eksponent gir 1/3'],['16<sup>3/4</sup>',8,'⁴√16 = 2, og 2³ = 8'],['32<sup>0,2</sup>',2,'0,2 = 1/5, og ⁵√32 = 2'],['∛64',4,'4³ = 64'],['4<sup>1,5</sup>',8,'√4 = 2, og 2³ = 8'],['9<sup>−1/2</sup>',1/3,'√9 = 3, og negativ eksponent gir 1/3'],['⁴√81',3,'3⁴ = 81']]);
+ return num(`Regn ut uten hjelpemidler: ${e}. Svar som heltall eller brøk.`,a,1e-6,'',`${s}. Svar: <b>${a<1?fr(1,Math.round(1/a)):nf(a)}</b>.`);},
+()=>{const a=R(2,9),t=R(0,2),f=[`x² − ${a*a}`,`x² + ${2*a}x + ${a*a}`,`x² − ${2*a}x + ${a*a}`][t],F=[`(x − ${a})(x + ${a})`,`(x + ${a})²`,`(x − ${a})²`],c=F[t];
+ return mc(`Faktoriser ${f}.`,c,F.filter(x=>x!==c).concat([`(x − ${a*a})(x + 1)`]),['Konjugatsetningen: a² − b² = (a − b)(a + b).','Første kvadratsetning: (a + b)² = a² + 2ab + b².','Andre kvadratsetning: (a − b)² = a² − 2ab + b².'][t]+` Svar: <b>${c}</b>.`);}
+],
+drofting:[
+()=>{const k=R(1,3),m=R(-5,8),t=R(0,3),f=poly([[1,'x<sup>3</sup>'],[-3*k*k,'x'],[m,'']]);const Q=[['x-koordinaten til bunnpunktet',k],['x-koordinaten til toppunktet',-k],['y-koordinaten til bunnpunktet',-2*k*k*k+m],['y-koordinaten til toppunktet',2*k*k*k+m]][t];
+ return num(`f(x) = ${f}. Finn ${Q[0]}.`,Q[1],1e-9,'',`f′(x) = 3x² − ${3*k*k} = 3(x − ${k})(x + ${k}). Fortegnslinja viser at f′ er positiv, negativ, positiv. Toppunkt i x = ${-k}: f(${-k}) = ${2*k*k*k+m}. Bunnpunkt i x = ${k}: f(${k}) = ${-2*k*k*k+m}. Svar: <b>${nf(Q[1])}</b>.`);},
+()=>{const A=R(1,6),Bv=R(1,6),up=Math.random()<.5,g1=up?-A:A,g2=up?Bv:-Bv;
+ return mc(`For en deriverbar funksjon g er g′(2) = ${nf(g1)} og g′(3) = ${nf(g2)}. Hva kan du si om grafen?`,up?'Grafen synker i x = 2 og stiger i x = 3, så den har et bunnpunkt mellom x = 2 og x = 3.':'Grafen stiger i x = 2 og synker i x = 3, så den har et toppunkt mellom x = 2 og x = 3.',[up?'Grafen stiger i x = 2 og synker i x = 3, så den har et toppunkt mellom x = 2 og x = 3.':'Grafen synker i x = 2 og stiger i x = 3, så den har et bunnpunkt mellom x = 2 og x = 3.',`Grafen ligger under x-aksen i x = ${up?2:3}.`,'Grafen har et nullpunkt mellom x = 2 og x = 3.'],`Fortegnet til g′ forteller om grafen stiger (positiv) eller synker (negativ). Når g′ skifter fra ${up?'negativ til positiv':'positiv til negativ'}, har grafen et ${up?'bunnpunkt':'toppunkt'}. g′ sier ingenting om hvor grafen ligger i forhold til x-aksen.`);},
+()=>{const b=3*R(-3,3),c=R(-5,5),d=R(-5,5);return num(`f(x) = ${poly([[1,'x<sup>3</sup>'],[b,'x<sup>2</sup>'],[c,'x'],[d,'']])}. Finn x-koordinaten til vendepunktet.`,-b/3,1e-9,'',`f′(x) = ${poly([[3,'x<sup>2</sup>'],[2*b,'x'],[c,'']])} og f″(x) = ${poly([[6,'x'],[2*b,'']])}. f″(x) = 0 gir x = <b>${nf(-b/3)}</b>, og f″ skifter fortegn der.`);}
+],
+renter:[
+()=>{const f=P([1.003,1.004,1.005,1.0025]),v=(Math.pow(f,12)-1)*100;return num(`Beløpet på en konto vokser med vekstfaktoren ${nf(f)} per måned. Hva er den årlige rentesatsen? Rund av til to desimaler.`,v,0.006,'%',`På ett år ganges beløpet med ${nf(f)}¹² ≈ ${nf(Math.pow(f,12),5)}. Årlig rentesats: <b>${nf(v,2)} %</b>.`);},
+()=>{if(Math.random()<.5){const A=P([70000,50000]),T=P([200000,100000]),f=P([1.003,1.005]),x=Math.log(T/A)/Math.log(f),n=Math.ceil(x);return num(`Beløpet på en konto etter x måneder er B(x) = ${nf(A)} · ${nf(f)}<sup>x</sup>. Etter hvor mange hele måneder er beløpet for første gang over ${nf(T)} kr?`,n,0,'måneder',`${nf(A)} · ${nf(f)}<sup>x</sup> = ${nf(T)} gir x = ln(${nf(T/A,4)}) / ln ${nf(f)} ≈ ${nf(x,2)}. Første hele måned: <b>${n}</b>.`);}
+ const r=P([3,4,6]),x=Math.log(2)/Math.log(1+r/100);return num(`Et beløp settes inn med ${r} % rente per år. Bruk logaritmer til å finne hvor lang tid det tar før beløpet er doblet. Rund av til to desimaler.`,x,0.006,'år',`${nf(1+r/100)}<sup>x</sup> = 2 gir x = ln 2 / ln ${nf(1+r/100)} ≈ <b>${nf(x,2)} år</b>.`);}
+]};
+
+const THEMES = [
+{"id":"sanns","navn":"Sannsynlighetsregning","kort":"Sannsynlighet","bok":"Kap. 5 Sannsynlighet: 5A–5C, 5E Hypergeometrisk fordeling, 5F Binomisk fordeling","mal":[
+"Regne ut sannsynligheter når det trekkes uten tilbakelegging",
+"Bruke komplementsetningen («minst én»)",
+"Regne med binomisk fordeling uten hjelpemidler",
+"Regne med binomisk fordeling i digitalt verktøy",
+"Regne med hypergeometrisk fordeling",
+"Regne ut betinget sannsynlighet (for eksempel positive tester)",
+"Telle gunstige utfall når det kastes flere terninger"]},
+{"id":"grense","navn":"Grenseverdier og kontinuitet","kort":"Grenseverdier","bok":"Kap. 3: 3B Grenseverdier, 3C Kontinuitet (og 3A Funksjoner)","mal":[
+"Finne grenseverdier av typen 0/0 ved å faktorisere",
+"Finne grenseverdier når x går mot uendelig",
+"Bestemme en konstant slik at en funksjon med delt forskrift blir kontinuerlig",
+"Avgjøre om en funksjon er kontinuerlig ved hjelp av ensidige grenseverdier",
+"Bruke definisjonen av den deriverte som en grenseverdi",
+"Finne grenseverdier med kvadratrot ved hjelp av konjugatsetningen"]},
+{"id":"log","navn":"Logaritmer og eksponentiallikninger","kort":"Logaritmer","bok":"Kap. 2: 2B Logaritmer, 2C Logaritmesetningene, 2D Logaritme- og eksponentiallikninger","mal":[
+"Bruke definisjonen av logaritmer til å regne ut verdier",
+"Bruke logaritmesetningene til å forenkle",
+"Løse eksponentiallikninger",
+"Løse logaritmelikninger og forkaste ugyldige løsninger",
+"Løse likninger med substitusjon (andregradslikning i eˣ, 10ˣ eller lg x)",
+"Bruke logaritmiske modeller som lydstyrke i desibel"]},
+{"id":"okon","navn":"Økonomiske modeller","kort":"Økonomi","bok":"Kap. 4 og 6: 4D Optimalisering, 6A Matematiske modeller","mal":[
+"Regne ut og tolke den deriverte i en kostnads- eller inntektsmodell",
+"Finne laveste enhetskostnad",
+"Finne største overskudd",
+"Finne største inntekt når prisen avhenger av antall solgte",
+"Finne laveste pris som ikke gir underskudd"]},
+{"id":"deriv","navn":"Derivasjon og vekstfart","kort":"Derivasjon","bok":"Kap. 4: 4A Derivasjon, 4B Derivasjonsregler","mal":[
+"Derivere polynomer",
+"Bruke produktregelen",
+"Bruke kjerneregelen på eksponential- og logaritmefunksjoner",
+"Bruke brøkregelen",
+"Finne gjennomsnittlig og momentan vekstfart"]},
+{"id":"sim","navn":"Simulering og programmering","kort":"Simulering","bok":"Oppslagsdelen: Python i S1 (s. 366) og GeoGebra i S1 (s. 357)","mal":[
+"Lese et simuleringsprogram og forklare hva det finner ut",
+"Finne hva et program med løkke skriver ut",
+"Regne ut den eksakte sannsynligheten et program simulerer",
+"Skrive eller endre en betingelse i et simuleringsprogram"]},
+{"id":"optim","navn":"Optimalisering","kort":"Optimalisering","bok":"Kap. 4: 4D Optimalisering","mal":[
+"Sette opp en funksjon for areal eller volum",
+"Finne største areal med derivasjon",
+"Finne største volum når overflaten er gitt",
+"Finne likningen for en tangent"]},
+{"id":"komb","navn":"Kombinatorikk","kort":"Kombinatorikk","bok":"Kap. 5: 5D Kombinatorikk","mal":[
+"Bruke produktregelen til å telle muligheter",
+"Regne ut antall kombinasjoner (n over r)",
+"Telle med komplement («minst ett»)",
+"Bruke kombinasjoner til å regne ut sannsynligheter"]},
+{"id":"modell","navn":"Modellering og regresjon","kort":"Modellering","bok":"Kap. 6: 6A Matematiske modeller, 6B Reelle datasett","mal":[
+"Lage modeller med regresjon i digitalt verktøy",
+"Velge hvilken type modell som passer, og begrunne valget",
+"Bruke en modell til å finne når noe når en bestemt verdi",
+"Finne og tolke vekstfarten i et punkt",
+"Vurdere hvor god modellen er, og hvor lenge den kan brukes"]},
+{"id":"pastand","navn":"Påstander og argumentasjon","kort":"Påstander","bok":"1A Tallmengder og symbolspråk – ellers på tvers av kapitlene","mal":[
+"Avgjøre om en matematisk påstand er sann eller usann, og begrunne det",
+"Finne et moteksempel"]},
+{"id":"algebra","navn":"Algebra og potensregning","kort":"Algebra","bok":"Kap. 1 og 2: 1A, 1C–1D, 2A n-te røtter og potenser","mal":[
+"Forenkle potensuttrykk med flere variabler",
+"Regne med brøkeksponenter og n-te røtter",
+"Faktorisere med kvadratsetningene og konjugatsetningen"]},
+{"id":"drofting","navn":"Funksjonsdrøfting","kort":"Drøfting","bok":"Kap. 4: 4C Fortegnet til den deriverte, 4E Den andrederiverte (og 3D Asymptoter)","mal":[
+"Finne topp- og bunnpunkter med fortegnslinje",
+"Bruke fortegnet til den deriverte til å si om grafen stiger eller synker",
+"Finne vendepunkter med den andrederiverte"]},
+{"id":"renter","navn":"Renter, sparing og lønnsvekst","kort":"Renter","bok":"Kap. 2 og 6: 2E Anvendelser, 6A Matematiske modeller","mal":[
+"Finne årlig rentesats fra månedlig vekstfaktor",
+"Bruke logaritmer til å finne når et beløp når en bestemt verdi"]}
+]
+;
+const TASKS = [{"s": "V22", "d": "Del 1", "o": 1, "h": "algebra", "t": "Skriv potensuttrykket med a og b så enkelt som mulig"}, {"s": "H22", "d": "Del 1", "o": 1, "h": "algebra", "t": "Skriv potensuttrykket med a og b så enkelt som mulig"}, {"s": "V23", "d": "Del 1", "o": 1, "h": "algebra", "t": "Skriv (2ab⁻¹)³ · (a²b⁻²)⁻¹ / (4a²b⁻³) så enkelt som mulig"}, {"s": "H23", "d": "Del 1", "o": 1, "h": "algebra", "t": "Skriv potensuttrykket med a og b så enkelt som mulig"}, {"s": "V23", "d": "Del 1", "o": 2, "h": "deriv", "t": "Deriver funksjonen f(x) = √x · ln x"}, {"s": "V24", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver funksjonen f(x) = 4x² · ln(3x)"}, {"s": "H24", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver funksjonen f(x) = e²ˣ / x"}, {"s": "H24", "d": "Del 1", "o": 6, "h": "deriv", "t": "Tre grafer: hvilken har gjennomsnittlig vekstfart 12 i [0, 4] og derivert 1 når x = 1"}, {"s": "V25", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver f(x) = e^(−2x + 5) + (1/5)x⁵ − 2π"}, {"s": "H25", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver f, og bestem g′(2) og g′(3) for g(x) = 2x³ − eˣ: hva forteller svarene om grafen"}, {"s": "V26", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver g(x) = 3x² − 5x³ + 2 og h(x) = (3x + 2) · ln(3x)"}, {"s": "V26", "d": "Del 1", "o": 6, "h": "deriv", "t": "Bruk grafen til å bestemme gjennomsnittlig vekstfart i [0, 3] og momentan vekstfart i x = 0 og x = 3"}, {"s": "V25", "d": "Del 1", "o": 2, "h": "drofting", "t": "g(x) = e^(x/2) · (2x − 1)²: nullpunkter, vis uttrykket for g′, og finn topp- og bunnpunkt"}, {"s": "H25", "d": "Del 1", "o": 5, "h": "drofting", "t": "f(x) = 4x² · ln x: bestem koordinatene til eventuelle topp- og bunnpunkter"}, {"s": "V26", "d": "Del 1", "o": 2, "h": "drofting", "t": "f(x) = eˣ · (6 − eˣ): nullpunkter, vis uttrykket for f′, og bestem topp- eller bunnpunkt"}, {"s": "V22", "d": "Del 1", "o": 3, "h": "grense", "t": "Bestem grenseverdien til (x − 3)/(x² + x − 12) når x går mot 3"}, {"s": "H22", "d": "Del 1", "o": 4, "h": "grense", "t": "Bestem grenseverdien til ((4 + h)² − 4²)/h når h går mot 0"}, {"s": "V23", "d": "Del 1", "o": 3, "h": "grense", "t": "Bestem grenseverdien til (x³ − 8)/(x² − 4) når x går mot 2"}, {"s": "H23", "d": "Del 1", "o": 4, "h": "grense", "t": "Funksjon med delt forskrift: bestem a slik at funksjonen blir kontinuerlig"}, {"s": "V24", "d": "Del 1", "o": 3, "h": "grense", "t": "f(x) = e^(−x + 1): bestem grenseverdiene når x går mot uendelig og mot minus uendelig"}, {"s": "V24", "d": "Del 1", "o": 5, "h": "grense", "t": "Funksjon med delt forskrift: gi størst mulig definisjonsmengde som gir kontinuitet og uendret verdimengde"}, {"s": "H24", "d": "Del 1", "o": 4, "h": "grense", "t": "Bestem grenseverdien til (2x² + x)/(−12x − 18) når x går mot uendelig"}, {"s": "V25", "d": "Del 1", "o": 4, "h": "grense", "t": "Bestem to grenseverdier, blant annet med kvadratrot i telleren"}, {"s": "V25", "d": "Del 1", "o": 6, "h": "grense", "t": "To funksjoner med delt forskrift: avgjør om hver av dem er kontinuerlig i x = 0"}, {"s": "H25", "d": "Del 1", "o": 3, "h": "grense", "t": "Bestem en grenseverdi, og bestem a slik at en annen grenseverdi eksisterer"}, {"s": "V26", "d": "Del 1", "o": 4, "h": "grense", "t": "Bestem grenseverdien når x går mot uendelig"}, {"s": "H25", "d": "Del 1", "o": 4, "h": "komb", "t": "Passord av tre tegn med siffer og bokstaver under to ulike regelsett"}, {"s": "V26", "d": "Del 1", "o": 8, "h": "komb", "t": "Fem jenter fordelt på to og tre sengeplasser: antall fordelinger, sannsynlighet for samme rom, og grupperinger"}, {"s": "V22", "d": "Del 1", "o": 4, "h": "log", "t": "Løs likningen e²ˣ − eˣ = 2"}, {"s": "V22", "d": "Del 1", "o": 5, "h": "log", "t": "lg(x + 3) + lg x = lg a: bestem a slik at x = 7 er en løsning"}, {"s": "H22", "d": "Del 1", "o": 3, "h": "log", "t": "Løs likningen lg(x − 3) + lg x = 1"}, {"s": "H23", "d": "Del 1", "o": 2, "h": "log", "t": "Skriv 2ln(e³), 3lg 70 og e^(3 ln 2) i stigende rekkefølge, og begrunn"}, {"s": "V24", "d": "Del 1", "o": 2, "h": "log", "t": "Løs likningen (ln x)² = ln(x⁶)"}, {"s": "H24", "d": "Del 1", "o": 3, "h": "log", "t": "Løs likningen 100ˣ − 3 · 10ˣ = 4"}, {"s": "V25", "d": "Del 1", "o": 3, "h": "log", "t": "Løs likningene 3^(3x + 2) − 5 = 76 og en likning med flere logaritmeledd"}, {"s": "H25", "d": "Del 1", "o": 2, "h": "log", "t": "Løs (lg x)² − 2lg x = 8, og bestem a slik at logₐ(64) = −1/3"}, {"s": "V26", "d": "Del 1", "o": 3, "h": "log", "t": "Sorter logaritme- og potensuttrykk i stigende rekkefølge, og forenkle et uttrykk med lg"}, {"s": "V22", "d": "Del 1", "o": 2, "h": "okon", "t": "Produksjonskostnad per lue E(x) = 0,2x + 40 + 20 000/x: bestem E′(100) og tolk tallet"}, {"s": "H22", "d": "Del 1", "o": 2, "h": "okon", "t": "Overskudd O(x) = −0,05x² + 100x − 10 000: bestem O′(500) og tolk, og finn maksimalt overskudd"}, {"s": "V23", "d": "Del 1", "o": 5, "h": "okon", "t": "K(x) = 0,2x² + 140x + 7000 og et ferdig program: hva blir resultatet, og hva forteller det bedriften"}, {"s": "H23", "d": "Del 1", "o": 5, "h": "okon", "t": "K(x) = 0,1x² + 100x + 9000 og et ferdig program: hva blir resultatet, og gi en praktisk tolkning"}, {"s": "V26", "d": "Del 1", "o": 5, "h": "pastand", "t": "To påstander: vertikal asymptote for en rasjonal funksjon, og antall arbeidsgrupper med 4 mot 3 medlemmer"}, {"s": "H22", "d": "Del 1", "o": 5, "h": "sanns", "t": "Krukke med 2 hvite og 6 svarte kuler: minst én hvit, og lag algoritme for minste antall svarte kuler"}, {"s": "V23", "d": "Del 1", "o": 4, "h": "sanns", "t": "Krukke med fire hvite og tre svarte kuler, trekk tre uten tilbakelegging"}, {"s": "H23", "d": "Del 1", "o": 3, "h": "sanns", "t": "Tre terninger: alle viser ulikt antall øyne, og nøyaktig to viser det samme"}, {"s": "V24", "d": "Del 1", "o": 4, "h": "sanns", "t": "Skuff med 6 gule, 5 svarte og 4 hvite sokker: to gule, og minst to av samme farge blant tre"}, {"s": "H24", "d": "Del 1", "o": 5, "h": "sanns", "t": "Kasse med 4 røde, 3 blå og 2 gule kuler: to like farger, og nøyaktig én gul"}, {"s": "V25", "d": "Del 1", "o": 5, "h": "sanns", "t": "Skiskytter som treffer 80 % av skuddene: de to første, nøyaktig to av tre, og høyst ett av tre"}, {"s": "V26", "d": "Del 1", "o": 7, "h": "sanns", "t": "Flervalgsprøve med tre oppgaver, og klasse der elevene har valgt tysk og S1"}, {"s": "V22", "d": "Del 1", "o": 6, "h": "sim", "t": "Forklar hva programmet gjør, og bruk sannsynlighetsregning til å finne samme svar"}, {"s": "H24", "d": "Del 1", "o": 2, "h": "sim", "t": "Bruk en egnet strategi til å bestemme verdien som skrives ut når programmet kjøres"}, {"s": "H25", "d": "Del 1", "o": 6, "h": "sim", "t": "Einars fotballprogram: mulige utskrifter, P(utskrift 1,0), og minste antall straffespark for 50 % sjanse"}, {"s": "V22", "d": "Del 2", "o": 7, "h": "deriv", "t": "Grafene til f, f′, g og g′: argumenter for hvilken graf som hører til hvilken funksjon"}, {"s": "H22", "d": "Del 2", "o": 6, "h": "drofting", "t": "f(x) = 2x + 5 + 1/(x − 1): for hvilke k har f′(x) = k løsning, symmetri, og generell form g"}, {"s": "H22", "d": "Del 2", "o": 5, "h": "grense", "t": "Tablett f(t) = 100 · e^(−0,012t) tatt hver morgen: kontinuitet, mengde for sjette tablett, og maksimal mengde"}, {"s": "V25", "d": "Del 2", "o": 2, "h": "grense", "t": "Amalie har sølt på arket: bestem hele funksjonsuttrykket til f ut fra kontinuitet og to deriverte"}, {"s": "H25", "d": "Del 2", "o": 2, "h": "grense", "t": "Funksjon med parameter: avgjør for hvilke verdier funksjonen er kontinuerlig"}, {"s": "V26", "d": "Del 2", "o": 4, "h": "grense", "t": "Strømpris med strømstøtte: forklar delt forskrift og kontinuitet, og sett opp funksjonsuttrykket"}, {"s": "V24", "d": "Del 2", "o": 3, "h": "komb", "t": "Passordregler med store og små bokstaver: antall mulige passord, og effekten av strengere regler"}, {"s": "H24", "d": "Del 2", "o": 1, "h": "komb", "t": "Drakt og Søm med plagg og sko: antall antrekk, sannsynlighet for skopar, og minste antall nye plagg"}, {"s": "V25", "d": "Del 2", "o": 1, "h": "komb", "t": "Hengelås med tre siffer der 7, 8, 9 og 0 ikke er med: sannsynlighet ved regning og ved simulering"}, {"s": "V25", "d": "Del 2", "o": 3, "h": "komb", "t": "Ti elever der fire trekkes ut: antall mulige grupper, minst to gutter, og bare én av to bestemte jenter"}, {"s": "V22", "d": "Del 2", "o": 6, "h": "log", "t": "Newtons avkjølingslov ln(T − T₀) = −kt + r: når er kaffen under 40 grader"}, {"s": "V23", "d": "Del 2", "o": 6, "h": "log", "t": "Lydstyrke L = 120 + 10 · lg I: intensitet ved 130 dB, prosentvis økning ved 2 dB, og minste avstand til flyet"}, {"s": "H24", "d": "Del 2", "o": 3, "h": "log", "t": "Grafen til f(x) = logₐ(x): bestem a og argumenter for at svaret er riktig"}, {"s": "H25", "d": "Del 2", "o": 5, "h": "log", "t": "Biogassanlegg med luktintensitet I = 1,4 · lg(C) − 0,3: har beboerne grunn til å klage, og hvilken luktverdi kreves"}, {"s": "V22", "d": "Del 2", "o": 1, "h": "modell", "t": "Antall gårdsbruk 1969–2020: velg og begrunn modell, framskriv til 2060, og når avtar det med 1000"}, {"s": "H22", "d": "Del 2", "o": 3, "h": "modell", "t": "Vareeksport 1980–2018: lag to modeller, sammenlign gjennomsnittlig vekst, og vurder handelsoverskudd"}, {"s": "V24", "d": "Del 2", "o": 6, "h": "modell", "t": "Drivstofftyper i Moss 2010–2022: lag modeller for bensin og elektrisk, og vurder gyldigheten"}, {"s": "V25", "d": "Del 2", "o": 6, "h": "modell", "t": "Oljefondet 1998–2024: lag modell, bestem V(20) og V′(20), og sammenlign vekstfart i to intervaller"}, {"s": "H25", "d": "Del 2", "o": 1, "h": "modell", "t": "Folketall 1910–1935: modell F(t) = a·bᵗ, gyldighetsområde, og når veksten er over 80 per år"}, {"s": "V26", "d": "Del 2", "o": 1, "h": "modell", "t": "Kopper med ulik radius: modell V(x) = a·xᵇ, bestem V′(4) og tolk, og effekten av å doble radien"}, {"s": "V23", "d": "Del 2", "o": 4, "h": "okon", "t": "Graf over antall solgte enheter mot pris: daglige inntekter ved 40 kroner, 75 000 kroner, og størst inntekt"}, {"s": "H23", "d": "Del 2", "o": 1, "h": "okon", "t": "Sofafabrikk: vis at O(x) er en god modell, størst overskudd, og laveste salgspris for 1 million i overskudd"}, {"s": "V24", "d": "Del 2", "o": 1, "h": "okon", "t": "Edison K(x) = 200x · 1,015ˣ + 200: størst overskudd, lavest enhetskostnad, og avtalt pris ved 15 mill. i overskudd"}, {"s": "H24", "d": "Del 2", "o": 5, "h": "okon", "t": "Stephanie leier ut parkeringsplasser: vis at hun har 30 plasser, og finn størst mulig månedlig inntekt"}, {"s": "H24", "d": "Del 2", "o": 6, "h": "okon", "t": "Skipsmotor AS med I(x) og K(x): tolk I′(15), størst overskudd, og overskudd når 10 % ikke kan selges"}, {"s": "V25", "d": "Del 2", "o": 5, "h": "okon", "t": "T-skjorter med p(x) og K(x): størst inntekt, størst overskudd, og største antall med kampanjedonasjon"}, {"s": "H25", "d": "Del 2", "o": 4, "h": "okon", "t": "Elevbedrift med K(x) = 0,02x² + 60x + 12 000: størst overskudd, og laveste pris uten underskudd"}, {"s": "V22", "d": "Del 2", "o": 5, "h": "optim", "t": "Rektangel innskrevet i likebeint rettvinklet trekant: bestem største mulige areal"}, {"s": "H22", "d": "Del 2", "o": 2, "h": "optim", "t": "f(x) = 1 − x²: tangenten i P skjærer aksene i A og B – bestem minste areal av trekanten OAB"}, {"s": "H23", "d": "Del 2", "o": 5, "h": "optim", "t": "Kasse uten lokk med kvadratisk grunnflate: største volum ved gitt areal, og minste areal ved gitt volum"}, {"s": "V24", "d": "Del 2", "o": 7, "h": "optim", "t": "f(x) = −x² + 4 med innskrevet rektangel og Lars sitt program: hva finner han ut, og holder strategien generelt"}, {"s": "V24", "d": "Del 2", "o": 8, "h": "optim", "t": "Pyramide med rektangulær grunnflate skåret ut av en halvkule: uttrykk for største volum"}, {"s": "V26", "d": "Del 2", "o": 3, "h": "optim", "t": "f(x) = 100 · 0,8ˣ med rektangel ABCD: uttrykk sidene ved a, og bestem største areal ved derivasjon"}, {"s": "V23", "d": "Del 2", "o": 2, "h": "pastand", "t": "Tre påstander om logaritmer, fjerdegradsfunksjoner og Lotto: sann eller usann"}, {"s": "H23", "d": "Del 2", "o": 6, "h": "pastand", "t": "Tre påstander om tredjegradsfunksjoner: ekstremalpunkt, skjæring med linjer og vendepunkt"}, {"s": "V24", "d": "Del 2", "o": 2, "h": "pastand", "t": "To påstander: e^(k · ln x) = xᵏ, og en ulikhet med a og b"}, {"s": "H24", "d": "Del 2", "o": 2, "h": "pastand", "t": "Tre påstander om vekstfart, grenseverdier og likningen aˣ = aʸ"}, {"s": "V22", "d": "Del 2", "o": 3, "h": "renter", "t": "Konto B(x) = 70 000 · 1,003ˣ og månedlige innskudd i aksjefond: årlig rentesats, kontinuitet, og når over 200 000"}, {"s": "V23", "d": "Del 2", "o": 1, "h": "renter", "t": "Timelønn 2008–2022: gjennomsnittlig årlig vekst, eksponentiell modell, samlet lønn, og krav om innhenting"}, {"s": "H23", "d": "Del 2", "o": 3, "h": "renter", "t": "Per og Kåre med 3 % og 6 % rente: innskudd, påstand om doblingstid, og når de til sammen har doblet"}, {"s": "V22", "d": "Del 2", "o": 2, "h": "sanns", "t": "74 % består oppkjøringen: forutsetninger for binomisk forsøk, minst 8 av 12, gutter og jenter hver for seg"}, {"s": "H22", "d": "Del 2", "o": 1, "h": "sanns", "t": "70 % av 145 kunder er turister: bestem sannsynligheten for at minst 100 var turister"}, {"s": "V23", "d": "Del 2", "o": 5, "h": "sanns", "t": "45 % av 1300 gratisbilletter brukes: minst 600 brukt, og hvor mange billetter må deles ut"}, {"s": "H23", "d": "Del 2", "o": 2, "h": "sanns", "t": "10 % av menn og 8 % av kvinner er venstrehendte: minst 25 av 280, antall gutter, og nøyaktig tre i klassen"}, {"s": "H23", "d": "Del 2", "o": 4, "h": "sanns", "t": "Fem terninger: minst to like, P(X > 20) med programmering, og største k slik at P(X ≥ k) > 0,8"}, {"s": "V24", "d": "Del 2", "o": 4, "h": "sanns", "t": "Ukjent antall røde og hvite kuler: minste antall som gir mellom 17 % og 18 % for tre hvite"}, {"s": "V24", "d": "Del 2", "o": 5, "h": "sanns", "t": "Fem terninger: alle viser ulike tall, og simulering for nøyaktig tre seksere"}, {"s": "H24", "d": "Del 2", "o": 4, "h": "sanns", "t": "Knekkebrød med gavekort i én av 1000 pakker: antall dager for 20 % vinnersjanse, pris, og simulering"}, {"s": "H24", "d": "Del 2", "o": 7, "h": "sanns", "t": "Covid-test med 99 % og 98 % sikkerhet: sannsynligheten for å være smittet når testen er positiv"}, {"s": "V25", "d": "Del 2", "o": 4, "h": "sanns", "t": "Kommunevalget: minst 4 av 10 stemte Frp, og samme spørsmål i en valgkrets med 243 stemmer"}, {"s": "H25", "d": "Del 2", "o": 3, "h": "sanns", "t": "Tre poser med 3 grønne, 8 gule og 7 røde drops: to gule, én av hver farge, og alle tre samme farge"}, {"s": "V26", "d": "Del 2", "o": 2, "h": "sanns", "t": "80 søkere der 14 er under 16 år: minst 8 av 10 intervjuede er eldre, og hvor mange må intervjues"}, {"s": "V22", "d": "Del 2", "o": 4, "h": "sim", "t": "Tre terninger der produktet av øynene er over 100: bestem sannsynligheten ved simulering"}, {"s": "H22", "d": "Del 2", "o": 4, "h": "sim", "t": "Terning med n sider kastet to ganger: lag program for P(X > 60), og finn minste n"}, {"s": "V23", "d": "Del 2", "o": 3, "h": "sim", "t": "Monas terningprogram: hvilken sannsynlighet regner hun ut, og lag eget program for sum 7 eller 11"}, {"s": "H25", "d": "Del 2", "o": 6, "h": "sim", "t": "Olas terningspill styrt av et program: hva er reglene, og hvor mange runder varer spillet i gjennomsnitt"}, {"s": "V26", "d": "Del 2", "o": 5, "h": "sim", "t": "Terningspill mellom Erik og Kris: sannsynlighet for poeng i en runde, og simulering av kappløp til 100 poeng"}];
+const SETT = {V22:"Våren 2022",H22:"Høsten 2022",V23:"Våren 2023",H23:"Høsten 2023",V24:"Våren 2024",H24:"Høsten 2024",V25:"Våren 2025",H25:"Høsten 2025",V26:"Våren 2026"};
+const ORDER = ["V26","H25","V25","H24","V24","H23","V23","H22","V22"];
+const KEY = "s1-avkrysning-v1";
+const TOTAL = TASKS.length;
+
+let state = { checked:{}, tested:{}, name:"", hide:false };
+try { const s = localStorage.getItem(KEY); if (s) state = Object.assign(state, JSON.parse(s)); } catch(e) {}
+if (!state.tested) state.tested = {};
+const ALLIDS = []; THEMES.forEach(t => t.mal.forEach((_,i) => ALLIDS.push(t.id+"-"+i)));
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {} }
+
+THEMES.forEach(t => {
+  t.tasks = TASKS.filter(x => x.h === t.navn || x.h === t.id)
+    .sort((a,b) => ORDER.indexOf(a.s)-ORDER.indexOf(b.s) || a.d.localeCompare(b.d) || a.o-b.o);
+  t.d1 = t.tasks.filter(x => x.d === "Del 1").length;
+  t.d2 = t.tasks.length - t.d1;
+});
+THEMES.sort((a,b) => b.tasks.length - a.tasks.length);
+
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const bar = document.getElementById("bar");
+const themesEl = document.getElementById("themes");
+
+THEMES.forEach(t => {
+  const seg = document.createElement("button");
+  seg.type = "button"; seg.className = "seg"; seg.setAttribute("role","listitem");
+  seg.style.setProperty("--w", t.tasks.length); seg.title = t.navn;
+  seg.innerHTML = `<div class="fill"></div><span>${esc(t.kort)}</span>`;
+  seg.addEventListener("click", () => document.getElementById("t-"+t.id).scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto":"smooth", block:"start"}));
+  t.seg = seg; bar.appendChild(seg);
+
+  const sec = document.createElement("section");
+  sec.className = "theme"; sec.id = "t-"+t.id;
+  const pct = Math.round(t.tasks.length/TOTAL*100);
+  const tags = [`<span class="tag">${t.tasks.length} av ${TOTAL} oppgaver (${pct} %)</span>`];
+  if (t.d1) tags.push(`<span class="tag d1">Del 1: ${t.d1}</span>`); else tags.push(`<span class="tag">Kommer ikke på Del 1</span>`);
+  if (t.d2) tags.push(`<span class="tag d2">Del 2: ${t.d2}</span>`); else tags.push(`<span class="tag">Kommer ikke på Del 2</span>`);
+  sec.innerHTML = `
+    <div class="thead">
+      <div class="trow"><h2>${esc(t.navn)}</h2><span class="count" aria-live="polite"></span></div>
+      <div class="meta">${tags.join("")}</div>
+      <p class="book">Les i boka: ${esc(t.bok)}</p>
+      <div class="minibar"><i></i></div>
+    </div>
+    <ul class="goals">${t.mal.map((m,i) => {
+      const id = t.id+"-"+i;
+      return `<li class="goal" data-id="${id}"><label><input type="checkbox" data-id="${id}"><span>Jeg kan ${esc(m.charAt(0).toLowerCase()+m.slice(1))}<span class="badge" hidden>Testet</span></span></label><button type="button" class="testbtn" data-test="${id}" aria-expanded="false">Test deg</button><div class="quiz" hidden></div></li>`;
+    }).join("")}</ul>
+    <details><summary>Se eksamensoppgavene om dette (${t.tasks.length})</summary>
+      <div class="tasks"><table><tbody>${t.tasks.map(x =>
+        `<tr><td class="src">${SETT[x.s]}<br>${x.d}, oppg. ${x.o}</td><td>${esc(x.t)}</td></tr>`).join("")}</tbody></table></div>
+    </details>`;
+  t.sec = sec; themesEl.appendChild(sec);
+});
+
+themesEl.addEventListener("change", e => {
+  const id = e.target.dataset.id; if (!id) return;
+  if (e.target.checked) state.checked[id] = true; else delete state.checked[id];
+  save(); render();
+});
+
+function render(){
+  let cover = 0, done = 0, all = 0;
+  THEMES.forEach(t => {
+    const n = t.mal.length;
+    const k = t.mal.filter((_,i) => state.checked[t.id+"-"+i]).length;
+    done += k; all += n;
+    const p = k/n;
+    cover += p * t.tasks.length / TOTAL;
+    t.seg.style.setProperty("--p", p);
+    t.seg.classList.toggle("full", p === 1);
+    t.seg.setAttribute("aria-label", `${t.navn}: ${k} av ${n} delmål krysset av`);
+    t.sec.querySelector(".count").textContent = `${k} av ${n}`;
+    t.sec.querySelector(".minibar i").style.width = (p*100)+"%";
+    t.sec.classList.toggle("complete", p === 1);
+    t.sec.querySelectorAll(".goal").forEach(li => {
+      const on = !!state.checked[li.dataset.id];
+      li.classList.toggle("is-done", on);
+      li.querySelector("input").checked = on;
+      li.querySelector(".badge").hidden = !state.tested[li.dataset.id];
+    });
+  });
+  document.getElementById("pct").textContent = Math.round(cover*100) + " %";
+  document.getElementById("scoretext").textContent =
+    `av eksamensoppgavene fra 2022–2026 handler om ting du har krysset av at du kan. Du har krysset av ${done} av ${all} delmål.`;
+  const app = document.getElementById("app");
+  app.classList.toggle("hide-done", state.hide);
+  app.classList.toggle("all-done", done === all);
+  document.getElementById("hide").checked = state.hide;
+  document.getElementById("codeout").textContent = makeCode();
+  document.getElementById("printname").textContent = state.name ? "Navn: " + state.name : "";
+}
+
+
+// ---------- Test deg ----------
+const CURRENT = {};
+function parseNum(s){
+  s = String(s).trim().replace(/[\s\u00A0]/g,"").replace(/[−–]/g,"-").replace(/(kr|%|år|km|egg|elever|besøk|min|stk)\.?$/i,"");
+  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s = s.replace(/\./g,"");
+  s = s.replace(",",".");
+  const fm = s.match(/^(-?\d+)\/(\d+)$/); if (fm && +fm[2] !== 0) return +fm[1] / +fm[2];
+  return /^-?\d*\.?\d+$/.test(s) ? parseFloat(s) : NaN;
+}
+function openQuiz(li, fresh){
+  const id = li.dataset.id, [tid, idx] = [id.slice(0,id.lastIndexOf("-")), +id.slice(id.lastIndexOf("-")+1)];
+  if (fresh || !CURRENT[id]) CURRENT[id] = GEN[tid][idx]();
+  const q = CURRENT[id], box = li.querySelector(".quiz");
+  let body = "";
+  if (q.type === "mc") body = `<div class="opts">${q.opts.map((o,i) => `<button type="button" class="opt" data-i="${i}">${o}</button>`).join("")}</div>`;
+  else body = `<div class="ansrow"><input type="text" ${q.type==="num"?'inputmode="decimal"':'class="wide"'} aria-label="Svaret ditt" placeholder="${q.type==="list"?"For eksempel: 3 5 7 8 12":"Svaret ditt"}">${q.unit?`<span>${q.unit}</span>`:""}<button type="button" class="btn primary chk">Sjekk svaret</button></div>`;
+  box.innerHTML = `<div class="qtext">${q.q}</div>${body}<p class="fb" aria-live="polite"></p>
+    <div class="qactions"><button type="button" class="btn rev">Vis løsning</button><button type="button" class="btn nxt">Ny oppgave</button><button type="button" class="btn cls">Lukk</button></div>
+    <div class="sol" hidden>${q.sol}</div>`;
+  box.hidden = false;
+  li.querySelector(".testbtn").setAttribute("aria-expanded","true");
+  const inp = box.querySelector("input"); if (inp) { inp.focus(); inp.addEventListener("keydown", e => { if (e.key === "Enter") box.querySelector(".chk").click(); }); }
+}
+function feedback(li, ok, msg){
+  const id = li.dataset.id, fb = li.querySelector(".fb");
+  fb.className = "fb " + (ok ? "ok" : "no");
+  if (ok) {
+    state.tested[id] = true; save(); render();
+    fb.innerHTML = state.checked[id] ? "Riktig!" : `Riktig! Føler du deg trygg på dette? <button type="button" class="btn markdone" style="margin-left:.4rem">Kryss av delmålet</button>`;
+  } else fb.textContent = msg || "Ikke helt. Prøv igjen, eller trykk «Vis løsning».";
+}
+themesEl.addEventListener("click", e => {
+  const tb = e.target.closest(".testbtn");
+  if (tb) { const li = tb.closest(".goal"), box = li.querySelector(".quiz");
+    if (!box.hidden) { box.hidden = true; tb.setAttribute("aria-expanded","false"); } else openQuiz(li, false); return; }
+  const li = e.target.closest(".goal"); if (!li) return;
+  const q = CURRENT[li.dataset.id];
+  if (e.target.closest(".opt")) { const b = e.target.closest(".opt"), i = +b.dataset.i;
+    if (i === q.correct) { li.querySelectorAll(".opt").forEach(o => o.disabled = true); b.classList.add("right"); feedback(li, true); }
+    else { b.classList.add("wrong"); b.disabled = true; feedback(li, false); }
+  } else if (e.target.closest(".chk")) {
+    const raw = li.querySelector(".ansrow input").value;
+    if (q.type === "num") {
+      const v = parseNum(raw); if (isNaN(v)) return feedback(li, false, "Skriv svaret som et tall, for eksempel 12,5.");
+      const ok = [].concat(q.ans).some(a => Math.abs(v - a) <= q.tol + 1e-9);
+      feedback(li, ok);
+    } else {
+      const xs = raw.trim().split(/[\s;]+/).filter(Boolean).map(parseNum);
+      if (xs.length !== 5 || xs.some(isNaN)) return feedback(li, false, "Skriv fem tall med mellomrom mellom.");
+      const s = xs.slice().sort((a,b) => a-b), med = s[2], mean = xs.reduce((a,b) => a+b)/5;
+      const okM = Math.abs(med - q.M) < 1e-9, okG = Math.abs(mean - q.G) < 1e-9;
+      feedback(li, okM && okG, `Ikke helt: medianen din er ${nf(med)} og gjennomsnittet er ${nf(mean,2)}. ${!okM?"Medianen":"Gjennomsnittet"} må justeres.`);
+    }
+  } else if (e.target.closest(".rev")) { li.querySelector(".sol").hidden = false;
+  } else if (e.target.closest(".nxt")) { openQuiz(li, true);
+  } else if (e.target.closest(".cls")) { li.querySelector(".quiz").hidden = true; li.querySelector(".testbtn").setAttribute("aria-expanded","false"); li.querySelector(".testbtn").focus();
+  } else if (e.target.closest(".markdone")) { state.checked[li.dataset.id] = true; save(); render(); li.querySelector(".fb").textContent = "Krysset av!"; }
+});
+
+// ---------- Lagringskode ----------
+const B32 = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
+function makeCode(){
+  let n = 0n; ALLIDS.forEach((id,i) => { if (state.checked[id]) n |= 1n << BigInt(i); if (state.tested[id]) n |= 1n << BigInt(i + ALLIDS.length); });
+  let s = ""; const L = Math.ceil(ALLIDS.length*2/5);
+  for (let i = 0; i < L; i++) { s = B32[Number(n & 31n)] + s; n >>= 5n; }
+  let ck = 0; for (const c of s) ck = (ck*7 + B32.indexOf(c)) % 32;
+  s = "A" + s + B32[ck];
+  return s.match(/.{1,4}/g).join("-");
+}
+function readCode(code){
+  let s = code.toUpperCase().replace(/[^0-9A-Z]/g,"").replace(/O/g,"0").replace(/[IL]/g,"1");
+  const L = Math.ceil(ALLIDS.length*2/5);
+  if (s.length !== L + 2 || s[0] !== "A") return null;
+  const body = s.slice(1, -1); let ck = 0;
+  for (const c of body) { const v = B32.indexOf(c); if (v < 0) return null; ck = (ck*7 + v) % 32; }
+  if (B32[ck] !== s[s.length-1]) return null;
+  let n = 0n; for (const c of body) n = (n << 5n) | BigInt(B32.indexOf(c));
+  const checked = {}, tested = {};
+  ALLIDS.forEach((id,i) => { if ((n >> BigInt(i)) & 1n) checked[id] = true; if ((n >> BigInt(i + ALLIDS.length)) & 1n) tested[id] = true; });
+  return { checked, tested };
+}
+document.getElementById("copy").addEventListener("click", async () => {
+  const code = makeCode(), msg = document.getElementById("copymsg");
+  try { await navigator.clipboard.writeText(code); msg.textContent = "Kopiert!"; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById("codeout")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); msg.textContent = "Koden er markert – kopier den selv."; }
+});
+document.getElementById("load").addEventListener("click", () => {
+  const r = readCode(document.getElementById("codein").value), msg = document.getElementById("loadmsg");
+  if (!r) { msg.textContent = "Koden stemmer ikke. Sjekk at du har skrevet den riktig."; return; }
+  const n = Object.keys(r.checked).length;
+  if (Object.keys(state.checked).length && !confirm(`Koden har ${n} avkrysninger. Den erstatter det som er krysset av nå. Vil du fortsette?`)) return;
+  state.checked = r.checked; state.tested = r.tested; save(); render();
+  msg.textContent = `Hentet! ${n} delmål er krysset av.`; document.getElementById("codein").value = "";
+});
+
+const navn = document.getElementById("navn");
+navn.value = state.name || "";
+navn.addEventListener("input", () => { state.name = navn.value; save(); render(); });
+document.getElementById("hide").addEventListener("change", e => { state.hide = e.target.checked; save(); render(); });
+document.getElementById("print").addEventListener("click", () => window.print());
+document.getElementById("reset").addEventListener("click", () => {
+  if (confirm("Vil du fjerne alle avkrysningene? Dette kan ikke angres.")) { state.checked = {}; state.tested = {}; save(); render(); }
+});
+render();
+</script>
+</body>
+</html>
