@@ -103,7 +103,7 @@ footer{margin-top:2.5rem;font-size:.85rem;color:var(--muted)}
 @media print{
   .testbtn,.quiz,.savebox,.badge{display:none!important}
   body{background:#fff;color:#000;font-size:11pt}
-  .tools,.name input,details,.seg span,.mapnote{display:none!important}
+  .tools,.delfilter,.name input,details,.seg span,.mapnote{display:none!important}
   .theme,.map{break-inside:avoid;border-color:#999}
   .hide-done .goal.is-done,.hide-done .theme.complete{display:block}
   .printname{display:block!important}
@@ -161,6 +161,17 @@ figure.mini figcaption{font-size:.85rem;font-weight:700;text-align:center}
 .savemsg{font-weight:700;font-size:.92rem}
 @media (max-width:560px){.quiz{margin-left:1rem;margin-right:1rem}.testbtn{margin-right:.75rem}}
 
+.dtag{display:inline-block;margin-left:.45rem;font-size:.72rem;font-weight:700;padding:0 .45rem;border-radius:999px;border:1.5px solid var(--line);color:var(--muted);vertical-align:2px;white-space:nowrap}
+.dtag.d1{border-color:var(--d1);color:var(--d1)} .dtag.d2{border-color:var(--d2);color:var(--d2)}
+.delfilter{display:inline-flex;border:1.5px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}
+.delfilter button{font:inherit;font-size:.9rem;padding:.4rem .85rem;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.delfilter button+button{border-left:1.5px solid var(--line)}
+.delfilter button[aria-pressed="true"]{background:var(--ink);color:var(--surface);font-weight:700}
+.goal.delhide,.theme.nogoals{display:none!important}
+.seg.narrow span{display:none}
+.qdel{margin:0 0 .7rem;font-size:.88rem;font-weight:700;padding:.35rem .7rem;border-radius:8px;border-left:3px solid var(--line);background:var(--surface)}
+.qdel.d1{border-left-color:var(--d1)} .qdel.d2{border-left-color:var(--d2)}
+.delstat{display:flex;flex-wrap:wrap;gap:.4rem .6rem;margin:.9rem 0 0;font-size:.88rem}
 .printname{display:none;font-size:1rem;margin-top:.3rem}
 </style>
 </head>
@@ -186,16 +197,18 @@ figure.mini figcaption{font-size:.85rem;font-weight:700;text-align:center}
       <p id="scoretext">av eksamensoppgavene fra 2022–2026 handler om ting du har krysset av at du kan.</p>
     </div>
     <div class="bar" id="bar" role="list"></div>
+    <div class="delstat" id="delstat"></div>
     <p class="mapnote">Hver blokk er et tema. Jo bredere blokken er, jo oftere har temaet kommet på eksamen. Blokken fylles opp når du krysser av. Trykk på en blokk for å hoppe til temaet.</p>
   </section>
 
   <div class="tools">
     <label class="toggle"><input type="checkbox" id="hide"> Vis bare det jeg mangler</label>
+    <div class="delfilter" role="group" aria-label="Vis delmål for"><button type="button" data-delf="0" aria-pressed="true">Alle</button><button type="button" data-delf="1" aria-pressed="false">Del 1</button><button type="button" data-delf="2" aria-pressed="false">Del 2</button></div>
     <span class="spacer"></span>
     <button class="btn" id="print" type="button">Skriv ut</button>
     <button class="btn" id="reset" type="button">Nullstill</button>
   </div>
-  <p style="margin:.25rem 0 0;color:var(--muted);font-size:.95rem">Kryss av når du føler deg ferdig med et delmål – altså at du kunne løst en eksamensoppgave om det alene. Usikker? Trykk «Test deg» og prøv en oppgave først.</p>
+  <p style="margin:.25rem 0 0;color:var(--muted);font-size:.95rem">Kryss av når du føler deg ferdig med et delmål – altså at du kunne løst en eksamensoppgave om det alene. Usikker? Trykk «Test deg» og prøv en oppgave først. <b>Del 1</b> er uten hjelpemidler, <b>Del 2</b> er med alle hjelpemidler.</p>
   <details class="savebox" id="savebox">
     <summary>Lagre fremgangen eller fortsett på en annen enhet</summary>
     <div class="savebody">
@@ -642,13 +655,17 @@ const THEMES = [
 "Bruke logaritmer til å finne når et beløp når en bestemt verdi"]}
 ]
 ;
+const DEL={sanns:[1,1,1,2,2,2,1],grense:[1,1,1,1,1,1],log:[1,1,1,1,1,0],okon:[1,0,1,1,0],deriv:[1,1,1,1,1],sim:[1,1,1,1],optim:[0,0,0,1],komb:[1,1,2,1],modell:[2,1,2,2,0],pastand:[0,0],algebra:[1,1,1],drofting:[1,1,1],renter:[2,2]};
+
+const DLAB = ["Del 1 og 2","Del 1","Del 2"];
+function delOf(tid, i){ return (typeof DEL !== "undefined" && DEL[tid] && DEL[tid][i] !== undefined) ? DEL[tid][i] : 0; }
 const TASKS = [{"s": "V22", "d": "Del 1", "o": 1, "h": "algebra", "t": "Skriv potensuttrykket med a og b så enkelt som mulig"}, {"s": "H22", "d": "Del 1", "o": 1, "h": "algebra", "t": "Skriv potensuttrykket med a og b så enkelt som mulig"}, {"s": "V23", "d": "Del 1", "o": 1, "h": "algebra", "t": "Skriv (2ab⁻¹)³ · (a²b⁻²)⁻¹ / (4a²b⁻³) så enkelt som mulig"}, {"s": "H23", "d": "Del 1", "o": 1, "h": "algebra", "t": "Skriv potensuttrykket med a og b så enkelt som mulig"}, {"s": "V23", "d": "Del 1", "o": 2, "h": "deriv", "t": "Deriver funksjonen f(x) = √x · ln x"}, {"s": "V24", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver funksjonen f(x) = 4x² · ln(3x)"}, {"s": "H24", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver funksjonen f(x) = e²ˣ / x"}, {"s": "H24", "d": "Del 1", "o": 6, "h": "deriv", "t": "Tre grafer: hvilken har gjennomsnittlig vekstfart 12 i [0, 4] og derivert 1 når x = 1"}, {"s": "V25", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver f(x) = e^(−2x + 5) + (1/5)x⁵ − 2π"}, {"s": "H25", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver f, og bestem g′(2) og g′(3) for g(x) = 2x³ − eˣ: hva forteller svarene om grafen"}, {"s": "V26", "d": "Del 1", "o": 1, "h": "deriv", "t": "Deriver g(x) = 3x² − 5x³ + 2 og h(x) = (3x + 2) · ln(3x)"}, {"s": "V26", "d": "Del 1", "o": 6, "h": "deriv", "t": "Bruk grafen til å bestemme gjennomsnittlig vekstfart i [0, 3] og momentan vekstfart i x = 0 og x = 3"}, {"s": "V25", "d": "Del 1", "o": 2, "h": "drofting", "t": "g(x) = e^(x/2) · (2x − 1)²: nullpunkter, vis uttrykket for g′, og finn topp- og bunnpunkt"}, {"s": "H25", "d": "Del 1", "o": 5, "h": "drofting", "t": "f(x) = 4x² · ln x: bestem koordinatene til eventuelle topp- og bunnpunkter"}, {"s": "V26", "d": "Del 1", "o": 2, "h": "drofting", "t": "f(x) = eˣ · (6 − eˣ): nullpunkter, vis uttrykket for f′, og bestem topp- eller bunnpunkt"}, {"s": "V22", "d": "Del 1", "o": 3, "h": "grense", "t": "Bestem grenseverdien til (x − 3)/(x² + x − 12) når x går mot 3"}, {"s": "H22", "d": "Del 1", "o": 4, "h": "grense", "t": "Bestem grenseverdien til ((4 + h)² − 4²)/h når h går mot 0"}, {"s": "V23", "d": "Del 1", "o": 3, "h": "grense", "t": "Bestem grenseverdien til (x³ − 8)/(x² − 4) når x går mot 2"}, {"s": "H23", "d": "Del 1", "o": 4, "h": "grense", "t": "Funksjon med delt forskrift: bestem a slik at funksjonen blir kontinuerlig"}, {"s": "V24", "d": "Del 1", "o": 3, "h": "grense", "t": "f(x) = e^(−x + 1): bestem grenseverdiene når x går mot uendelig og mot minus uendelig"}, {"s": "V24", "d": "Del 1", "o": 5, "h": "grense", "t": "Funksjon med delt forskrift: gi størst mulig definisjonsmengde som gir kontinuitet og uendret verdimengde"}, {"s": "H24", "d": "Del 1", "o": 4, "h": "grense", "t": "Bestem grenseverdien til (2x² + x)/(−12x − 18) når x går mot uendelig"}, {"s": "V25", "d": "Del 1", "o": 4, "h": "grense", "t": "Bestem to grenseverdier, blant annet med kvadratrot i telleren"}, {"s": "V25", "d": "Del 1", "o": 6, "h": "grense", "t": "To funksjoner med delt forskrift: avgjør om hver av dem er kontinuerlig i x = 0"}, {"s": "H25", "d": "Del 1", "o": 3, "h": "grense", "t": "Bestem en grenseverdi, og bestem a slik at en annen grenseverdi eksisterer"}, {"s": "V26", "d": "Del 1", "o": 4, "h": "grense", "t": "Bestem grenseverdien når x går mot uendelig"}, {"s": "H25", "d": "Del 1", "o": 4, "h": "komb", "t": "Passord av tre tegn med siffer og bokstaver under to ulike regelsett"}, {"s": "V26", "d": "Del 1", "o": 8, "h": "komb", "t": "Fem jenter fordelt på to og tre sengeplasser: antall fordelinger, sannsynlighet for samme rom, og grupperinger"}, {"s": "V22", "d": "Del 1", "o": 4, "h": "log", "t": "Løs likningen e²ˣ − eˣ = 2"}, {"s": "V22", "d": "Del 1", "o": 5, "h": "log", "t": "lg(x + 3) + lg x = lg a: bestem a slik at x = 7 er en løsning"}, {"s": "H22", "d": "Del 1", "o": 3, "h": "log", "t": "Løs likningen lg(x − 3) + lg x = 1"}, {"s": "H23", "d": "Del 1", "o": 2, "h": "log", "t": "Skriv 2ln(e³), 3lg 70 og e^(3 ln 2) i stigende rekkefølge, og begrunn"}, {"s": "V24", "d": "Del 1", "o": 2, "h": "log", "t": "Løs likningen (ln x)² = ln(x⁶)"}, {"s": "H24", "d": "Del 1", "o": 3, "h": "log", "t": "Løs likningen 100ˣ − 3 · 10ˣ = 4"}, {"s": "V25", "d": "Del 1", "o": 3, "h": "log", "t": "Løs likningene 3^(3x + 2) − 5 = 76 og en likning med flere logaritmeledd"}, {"s": "H25", "d": "Del 1", "o": 2, "h": "log", "t": "Løs (lg x)² − 2lg x = 8, og bestem a slik at logₐ(64) = −1/3"}, {"s": "V26", "d": "Del 1", "o": 3, "h": "log", "t": "Sorter logaritme- og potensuttrykk i stigende rekkefølge, og forenkle et uttrykk med lg"}, {"s": "V22", "d": "Del 1", "o": 2, "h": "okon", "t": "Produksjonskostnad per lue E(x) = 0,2x + 40 + 20 000/x: bestem E′(100) og tolk tallet"}, {"s": "H22", "d": "Del 1", "o": 2, "h": "okon", "t": "Overskudd O(x) = −0,05x² + 100x − 10 000: bestem O′(500) og tolk, og finn maksimalt overskudd"}, {"s": "V23", "d": "Del 1", "o": 5, "h": "okon", "t": "K(x) = 0,2x² + 140x + 7000 og et ferdig program: hva blir resultatet, og hva forteller det bedriften"}, {"s": "H23", "d": "Del 1", "o": 5, "h": "okon", "t": "K(x) = 0,1x² + 100x + 9000 og et ferdig program: hva blir resultatet, og gi en praktisk tolkning"}, {"s": "V26", "d": "Del 1", "o": 5, "h": "pastand", "t": "To påstander: vertikal asymptote for en rasjonal funksjon, og antall arbeidsgrupper med 4 mot 3 medlemmer"}, {"s": "H22", "d": "Del 1", "o": 5, "h": "sanns", "t": "Krukke med 2 hvite og 6 svarte kuler: minst én hvit, og lag algoritme for minste antall svarte kuler"}, {"s": "V23", "d": "Del 1", "o": 4, "h": "sanns", "t": "Krukke med fire hvite og tre svarte kuler, trekk tre uten tilbakelegging"}, {"s": "H23", "d": "Del 1", "o": 3, "h": "sanns", "t": "Tre terninger: alle viser ulikt antall øyne, og nøyaktig to viser det samme"}, {"s": "V24", "d": "Del 1", "o": 4, "h": "sanns", "t": "Skuff med 6 gule, 5 svarte og 4 hvite sokker: to gule, og minst to av samme farge blant tre"}, {"s": "H24", "d": "Del 1", "o": 5, "h": "sanns", "t": "Kasse med 4 røde, 3 blå og 2 gule kuler: to like farger, og nøyaktig én gul"}, {"s": "V25", "d": "Del 1", "o": 5, "h": "sanns", "t": "Skiskytter som treffer 80 % av skuddene: de to første, nøyaktig to av tre, og høyst ett av tre"}, {"s": "V26", "d": "Del 1", "o": 7, "h": "sanns", "t": "Flervalgsprøve med tre oppgaver, og klasse der elevene har valgt tysk og S1"}, {"s": "V22", "d": "Del 1", "o": 6, "h": "sim", "t": "Forklar hva programmet gjør, og bruk sannsynlighetsregning til å finne samme svar"}, {"s": "H24", "d": "Del 1", "o": 2, "h": "sim", "t": "Bruk en egnet strategi til å bestemme verdien som skrives ut når programmet kjøres"}, {"s": "H25", "d": "Del 1", "o": 6, "h": "sim", "t": "Einars fotballprogram: mulige utskrifter, P(utskrift 1,0), og minste antall straffespark for 50 % sjanse"}, {"s": "V22", "d": "Del 2", "o": 7, "h": "deriv", "t": "Grafene til f, f′, g og g′: argumenter for hvilken graf som hører til hvilken funksjon"}, {"s": "H22", "d": "Del 2", "o": 6, "h": "drofting", "t": "f(x) = 2x + 5 + 1/(x − 1): for hvilke k har f′(x) = k løsning, symmetri, og generell form g"}, {"s": "H22", "d": "Del 2", "o": 5, "h": "grense", "t": "Tablett f(t) = 100 · e^(−0,012t) tatt hver morgen: kontinuitet, mengde for sjette tablett, og maksimal mengde"}, {"s": "V25", "d": "Del 2", "o": 2, "h": "grense", "t": "Amalie har sølt på arket: bestem hele funksjonsuttrykket til f ut fra kontinuitet og to deriverte"}, {"s": "H25", "d": "Del 2", "o": 2, "h": "grense", "t": "Funksjon med parameter: avgjør for hvilke verdier funksjonen er kontinuerlig"}, {"s": "V26", "d": "Del 2", "o": 4, "h": "grense", "t": "Strømpris med strømstøtte: forklar delt forskrift og kontinuitet, og sett opp funksjonsuttrykket"}, {"s": "V24", "d": "Del 2", "o": 3, "h": "komb", "t": "Passordregler med store og små bokstaver: antall mulige passord, og effekten av strengere regler"}, {"s": "H24", "d": "Del 2", "o": 1, "h": "komb", "t": "Drakt og Søm med plagg og sko: antall antrekk, sannsynlighet for skopar, og minste antall nye plagg"}, {"s": "V25", "d": "Del 2", "o": 1, "h": "komb", "t": "Hengelås med tre siffer der 7, 8, 9 og 0 ikke er med: sannsynlighet ved regning og ved simulering"}, {"s": "V25", "d": "Del 2", "o": 3, "h": "komb", "t": "Ti elever der fire trekkes ut: antall mulige grupper, minst to gutter, og bare én av to bestemte jenter"}, {"s": "V22", "d": "Del 2", "o": 6, "h": "log", "t": "Newtons avkjølingslov ln(T − T₀) = −kt + r: når er kaffen under 40 grader"}, {"s": "V23", "d": "Del 2", "o": 6, "h": "log", "t": "Lydstyrke L = 120 + 10 · lg I: intensitet ved 130 dB, prosentvis økning ved 2 dB, og minste avstand til flyet"}, {"s": "H24", "d": "Del 2", "o": 3, "h": "log", "t": "Grafen til f(x) = logₐ(x): bestem a og argumenter for at svaret er riktig"}, {"s": "H25", "d": "Del 2", "o": 5, "h": "log", "t": "Biogassanlegg med luktintensitet I = 1,4 · lg(C) − 0,3: har beboerne grunn til å klage, og hvilken luktverdi kreves"}, {"s": "V22", "d": "Del 2", "o": 1, "h": "modell", "t": "Antall gårdsbruk 1969–2020: velg og begrunn modell, framskriv til 2060, og når avtar det med 1000"}, {"s": "H22", "d": "Del 2", "o": 3, "h": "modell", "t": "Vareeksport 1980–2018: lag to modeller, sammenlign gjennomsnittlig vekst, og vurder handelsoverskudd"}, {"s": "V24", "d": "Del 2", "o": 6, "h": "modell", "t": "Drivstofftyper i Moss 2010–2022: lag modeller for bensin og elektrisk, og vurder gyldigheten"}, {"s": "V25", "d": "Del 2", "o": 6, "h": "modell", "t": "Oljefondet 1998–2024: lag modell, bestem V(20) og V′(20), og sammenlign vekstfart i to intervaller"}, {"s": "H25", "d": "Del 2", "o": 1, "h": "modell", "t": "Folketall 1910–1935: modell F(t) = a·bᵗ, gyldighetsområde, og når veksten er over 80 per år"}, {"s": "V26", "d": "Del 2", "o": 1, "h": "modell", "t": "Kopper med ulik radius: modell V(x) = a·xᵇ, bestem V′(4) og tolk, og effekten av å doble radien"}, {"s": "V23", "d": "Del 2", "o": 4, "h": "okon", "t": "Graf over antall solgte enheter mot pris: daglige inntekter ved 40 kroner, 75 000 kroner, og størst inntekt"}, {"s": "H23", "d": "Del 2", "o": 1, "h": "okon", "t": "Sofafabrikk: vis at O(x) er en god modell, størst overskudd, og laveste salgspris for 1 million i overskudd"}, {"s": "V24", "d": "Del 2", "o": 1, "h": "okon", "t": "Edison K(x) = 200x · 1,015ˣ + 200: størst overskudd, lavest enhetskostnad, og avtalt pris ved 15 mill. i overskudd"}, {"s": "H24", "d": "Del 2", "o": 5, "h": "okon", "t": "Stephanie leier ut parkeringsplasser: vis at hun har 30 plasser, og finn størst mulig månedlig inntekt"}, {"s": "H24", "d": "Del 2", "o": 6, "h": "okon", "t": "Skipsmotor AS med I(x) og K(x): tolk I′(15), størst overskudd, og overskudd når 10 % ikke kan selges"}, {"s": "V25", "d": "Del 2", "o": 5, "h": "okon", "t": "T-skjorter med p(x) og K(x): størst inntekt, størst overskudd, og største antall med kampanjedonasjon"}, {"s": "H25", "d": "Del 2", "o": 4, "h": "okon", "t": "Elevbedrift med K(x) = 0,02x² + 60x + 12 000: størst overskudd, og laveste pris uten underskudd"}, {"s": "V22", "d": "Del 2", "o": 5, "h": "optim", "t": "Rektangel innskrevet i likebeint rettvinklet trekant: bestem største mulige areal"}, {"s": "H22", "d": "Del 2", "o": 2, "h": "optim", "t": "f(x) = 1 − x²: tangenten i P skjærer aksene i A og B – bestem minste areal av trekanten OAB"}, {"s": "H23", "d": "Del 2", "o": 5, "h": "optim", "t": "Kasse uten lokk med kvadratisk grunnflate: største volum ved gitt areal, og minste areal ved gitt volum"}, {"s": "V24", "d": "Del 2", "o": 7, "h": "optim", "t": "f(x) = −x² + 4 med innskrevet rektangel og Lars sitt program: hva finner han ut, og holder strategien generelt"}, {"s": "V24", "d": "Del 2", "o": 8, "h": "optim", "t": "Pyramide med rektangulær grunnflate skåret ut av en halvkule: uttrykk for største volum"}, {"s": "V26", "d": "Del 2", "o": 3, "h": "optim", "t": "f(x) = 100 · 0,8ˣ med rektangel ABCD: uttrykk sidene ved a, og bestem største areal ved derivasjon"}, {"s": "V23", "d": "Del 2", "o": 2, "h": "pastand", "t": "Tre påstander om logaritmer, fjerdegradsfunksjoner og Lotto: sann eller usann"}, {"s": "H23", "d": "Del 2", "o": 6, "h": "pastand", "t": "Tre påstander om tredjegradsfunksjoner: ekstremalpunkt, skjæring med linjer og vendepunkt"}, {"s": "V24", "d": "Del 2", "o": 2, "h": "pastand", "t": "To påstander: e^(k · ln x) = xᵏ, og en ulikhet med a og b"}, {"s": "H24", "d": "Del 2", "o": 2, "h": "pastand", "t": "Tre påstander om vekstfart, grenseverdier og likningen aˣ = aʸ"}, {"s": "V22", "d": "Del 2", "o": 3, "h": "renter", "t": "Konto B(x) = 70 000 · 1,003ˣ og månedlige innskudd i aksjefond: årlig rentesats, kontinuitet, og når over 200 000"}, {"s": "V23", "d": "Del 2", "o": 1, "h": "renter", "t": "Timelønn 2008–2022: gjennomsnittlig årlig vekst, eksponentiell modell, samlet lønn, og krav om innhenting"}, {"s": "H23", "d": "Del 2", "o": 3, "h": "renter", "t": "Per og Kåre med 3 % og 6 % rente: innskudd, påstand om doblingstid, og når de til sammen har doblet"}, {"s": "V22", "d": "Del 2", "o": 2, "h": "sanns", "t": "74 % består oppkjøringen: forutsetninger for binomisk forsøk, minst 8 av 12, gutter og jenter hver for seg"}, {"s": "H22", "d": "Del 2", "o": 1, "h": "sanns", "t": "70 % av 145 kunder er turister: bestem sannsynligheten for at minst 100 var turister"}, {"s": "V23", "d": "Del 2", "o": 5, "h": "sanns", "t": "45 % av 1300 gratisbilletter brukes: minst 600 brukt, og hvor mange billetter må deles ut"}, {"s": "H23", "d": "Del 2", "o": 2, "h": "sanns", "t": "10 % av menn og 8 % av kvinner er venstrehendte: minst 25 av 280, antall gutter, og nøyaktig tre i klassen"}, {"s": "H23", "d": "Del 2", "o": 4, "h": "sanns", "t": "Fem terninger: minst to like, P(X > 20) med programmering, og største k slik at P(X ≥ k) > 0,8"}, {"s": "V24", "d": "Del 2", "o": 4, "h": "sanns", "t": "Ukjent antall røde og hvite kuler: minste antall som gir mellom 17 % og 18 % for tre hvite"}, {"s": "V24", "d": "Del 2", "o": 5, "h": "sanns", "t": "Fem terninger: alle viser ulike tall, og simulering for nøyaktig tre seksere"}, {"s": "H24", "d": "Del 2", "o": 4, "h": "sanns", "t": "Knekkebrød med gavekort i én av 1000 pakker: antall dager for 20 % vinnersjanse, pris, og simulering"}, {"s": "H24", "d": "Del 2", "o": 7, "h": "sanns", "t": "Covid-test med 99 % og 98 % sikkerhet: sannsynligheten for å være smittet når testen er positiv"}, {"s": "V25", "d": "Del 2", "o": 4, "h": "sanns", "t": "Kommunevalget: minst 4 av 10 stemte Frp, og samme spørsmål i en valgkrets med 243 stemmer"}, {"s": "H25", "d": "Del 2", "o": 3, "h": "sanns", "t": "Tre poser med 3 grønne, 8 gule og 7 røde drops: to gule, én av hver farge, og alle tre samme farge"}, {"s": "V26", "d": "Del 2", "o": 2, "h": "sanns", "t": "80 søkere der 14 er under 16 år: minst 8 av 10 intervjuede er eldre, og hvor mange må intervjues"}, {"s": "V22", "d": "Del 2", "o": 4, "h": "sim", "t": "Tre terninger der produktet av øynene er over 100: bestem sannsynligheten ved simulering"}, {"s": "H22", "d": "Del 2", "o": 4, "h": "sim", "t": "Terning med n sider kastet to ganger: lag program for P(X > 60), og finn minste n"}, {"s": "V23", "d": "Del 2", "o": 3, "h": "sim", "t": "Monas terningprogram: hvilken sannsynlighet regner hun ut, og lag eget program for sum 7 eller 11"}, {"s": "H25", "d": "Del 2", "o": 6, "h": "sim", "t": "Olas terningspill styrt av et program: hva er reglene, og hvor mange runder varer spillet i gjennomsnitt"}, {"s": "V26", "d": "Del 2", "o": 5, "h": "sim", "t": "Terningspill mellom Erik og Kris: sannsynlighet for poeng i en runde, og simulering av kappløp til 100 poeng"}];
 const SETT = {V22:"Våren 2022",H22:"Høsten 2022",V23:"Våren 2023",H23:"Høsten 2023",V24:"Våren 2024",H24:"Høsten 2024",V25:"Våren 2025",H25:"Høsten 2025",V26:"Våren 2026"};
 const ORDER = ["V26","H25","V25","H24","V24","H23","V23","H22","V22"];
 const KEY = "s1-avkrysning-v1";
 const TOTAL = TASKS.length;
 
-let state = { checked:{}, tested:{}, name:"", hide:false };
+let state = { checked:{}, tested:{}, name:"", hide:false, delf:0 };
 try { const s = localStorage.getItem(KEY); if (s) state = Object.assign(state, JSON.parse(s)); } catch(e) {}
 if (!state.tested) state.tested = {};
 const ALLIDS = []; THEMES.forEach(t => t.mal.forEach((_,i) => ALLIDS.push(t.id+"-"+i)));
@@ -690,7 +707,8 @@ THEMES.forEach(t => {
     </div>
     <ul class="goals">${t.mal.map((m,i) => {
       const id = t.id+"-"+i;
-      return `<li class="goal" data-id="${id}"><label><input type="checkbox" data-id="${id}"><span>Jeg kan ${esc(m.charAt(0).toLowerCase()+m.slice(1))}<span class="badge" hidden>Testet</span></span></label><button type="button" class="testbtn" data-test="${id}" aria-expanded="false">Test deg</button><div class="quiz" hidden></div></li>`;
+      const d = delOf(t.id, i);
+      return `<li class="goal" data-id="${id}" data-del="${d}"><label><input type="checkbox" data-id="${id}"><span>Jeg kan ${esc(m.charAt(0).toLowerCase()+m.slice(1))}<span class="dtag d${d}">${DLAB[d]}</span><span class="badge" hidden>Testet</span></span></label><button type="button" class="testbtn" data-test="${id}" aria-expanded="false">Test deg</button><div class="quiz" hidden></div></li>`;
     }).join("")}</ul>
     <details><summary>Se eksamensoppgavene om dette (${t.tasks.length})</summary>
       <div class="tasks"><table><tbody>${t.tasks.map(x =>
@@ -706,7 +724,7 @@ themesEl.addEventListener("change", e => {
 });
 
 function render(){
-  let cover = 0, done = 0, all = 0;
+  let cover = 0, done = 0, all = 0; const dc = [[0,0],[0,0],[0,0]];
   THEMES.forEach(t => {
     const n = t.mal.length;
     const k = t.mal.filter((_,i) => state.checked[t.id+"-"+i]).length;
@@ -719,14 +737,21 @@ function render(){
     t.sec.querySelector(".count").textContent = `${k} av ${n}`;
     t.sec.querySelector(".minibar i").style.width = (p*100)+"%";
     t.sec.classList.toggle("complete", p === 1);
+    let vis = 0;
     t.sec.querySelectorAll(".goal").forEach(li => {
-      const on = !!state.checked[li.dataset.id];
+      const on = !!state.checked[li.dataset.id], d = +li.dataset.del, dh = state.delf && d && d !== state.delf;
+      li.classList.toggle("delhide", !!dh);
+      if (!dh && !(state.hide && on)) vis++;
+      dc[d][0]++; if (on) dc[d][1]++;
       li.classList.toggle("is-done", on);
       li.querySelector("input").checked = on;
       li.querySelector(".badge").hidden = !state.tested[li.dataset.id];
     });
+    t.sec.classList.toggle("nogoals", vis === 0 && !!state.delf);
   });
   document.getElementById("pct").textContent = Math.round(cover*100) + " %";
+  document.getElementById("delstat").innerHTML = `<span class="tag d1">Del 1: ${dc[1][1]} av ${dc[1][0]}</span><span class="tag d2">Del 2: ${dc[2][1]} av ${dc[2][0]}</span><span class="tag">Begge deler: ${dc[0][1]} av ${dc[0][0]}</span>`;
+  document.querySelectorAll(".delfilter button").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.delf === (state.delf||0))));
   document.getElementById("scoretext").textContent =
     `av eksamensoppgavene fra 2022–2026 handler om ting du har krysset av at du kan. Du har krysset av ${done} av ${all} delmål.`;
   const app = document.getElementById("app");
@@ -754,7 +779,8 @@ function openQuiz(li, fresh){
   let body = "";
   if (q.type === "mc") body = `<div class="opts">${q.opts.map((o,i) => `<button type="button" class="opt" data-i="${i}">${o}</button>`).join("")}</div>`;
   else body = `<div class="ansrow"><input type="text" ${q.type==="num"?'inputmode="decimal"':'class="wide"'} aria-label="Svaret ditt" placeholder="${q.type==="list"?"For eksempel: 3 5 7 8 12":"Svaret ditt"}">${q.unit?`<span>${q.unit}</span>`:""}<button type="button" class="btn primary chk">Sjekk svaret</button></div>`;
-  box.innerHTML = `<div class="qtext">${q.q}</div>${body}<p class="fb" aria-live="polite"></p>
+  const dd = delOf(tid, idx), DTXT = ["Kan komme på både Del 1 og Del 2. Prøv gjerne uten hjelpemidler først.","Del 1 – uten hjelpemidler. Bruk bare blyant og papir.","Del 2 – alle hjelpemidler: GeoGebra, Python, kalkulator og regneark."];
+  box.innerHTML = `<p class="qdel d${dd}">${DTXT[dd]}</p><div class="qtext">${q.q}</div>${body}<p class="fb" aria-live="polite"></p>
     <div class="qactions"><button type="button" class="btn rev">Vis løsning</button><button type="button" class="btn nxt">Ny oppgave</button><button type="button" class="btn cls">Lukk</button></div>
     <div class="sol" hidden>${q.sol}</div>`;
   box.hidden = false;
@@ -837,11 +863,15 @@ const navn = document.getElementById("navn");
 navn.value = state.name || "";
 navn.addEventListener("input", () => { state.name = navn.value; save(); render(); });
 document.getElementById("hide").addEventListener("change", e => { state.hide = e.target.checked; save(); render(); });
+function fitLabels(){ THEMES.forEach(x => x.seg.classList.toggle("narrow", x.seg.offsetWidth < 44)); }
+window.addEventListener("resize", fitLabels);
+document.querySelectorAll(".delfilter button").forEach(b => b.addEventListener("click", () => { state.delf = +b.dataset.delf; save(); render(); }));
 document.getElementById("print").addEventListener("click", () => window.print());
 document.getElementById("reset").addEventListener("click", () => {
   if (confirm("Vil du fjerne alle avkrysningene? Dette kan ikke angres.")) { state.checked = {}; state.tested = {}; save(); render(); }
 });
 render();
+fitLabels();
 </script>
 </body>
 </html>
